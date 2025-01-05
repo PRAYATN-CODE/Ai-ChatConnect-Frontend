@@ -19,7 +19,8 @@ const Home = () => {
     const [projectLoading, setProjectLoading] = useState(false);
     const [deleteModal, setDeleteModal] = useState(false);
     const [deleteProjectId, setDeleteProjectId] = useState(null);
-    const [adminId, setAdminId] = useState(null);
+    const [adminId, setAdminId] = useState(localStorage.getItem('user'));
+    const loggedInUser = JSON.parse(localStorage.getItem('user'))
 
     const handlelogout = () => {
         localStorage.setItem('token', '');
@@ -79,14 +80,6 @@ const Home = () => {
             navigate('/login');
         }
     }, []);
-
-    useEffect(() => {
-        if (user && user._id) {
-            setAdminId(user._id);
-        }
-
-        console.log("the user is", user, "and the id is ", user._id)
-    }, [user]);
 
     const deleteProject = () => {
         axios.delete(`/projects/delete-project/${deleteProjectId}`, {
@@ -316,14 +309,18 @@ const Home = () => {
                                                     })
                                                 }}
                                                 className="bg-yellow-400 text-black w-[90px] h-[45px] text-xl font-semibold rounded-lg hover:bg-yellow-500 hover:shadow-lg hover:scale-110 transition duration-500">Join</button>
-                                            {project.admin === adminId && <button
-                                                onClick={() => {
-                                                    setDeleteProjectId(project._id)
-                                                    setDeleteModal(true)
-                                                }}
-                                                className="bg-transparent border border-white w-[90px] h-[45px] rounded-lg hover:bg-blue-700 hover:shadow-lg hover:scale-110 transition duration-500 flex items-center justify-center">
-                                                <DeleteIcon />
-                                            </button>}
+                                            {project?.admin === loggedInUser?._id && (
+                                                <button
+                                                    onClick={() => {
+                                                        setDeleteProjectId(project._id);
+                                                        setDeleteModal(true);
+                                                    }}
+                                                    className="bg-transparent border border-white w-[90px] h-[45px] rounded-lg hover:bg-blue-700 hover:shadow-lg hover:scale-110 transition duration-500 flex items-center justify-center"
+                                                >
+                                                    <DeleteIcon />
+                                                </button>
+                                            )}
+
                                         </div>
                                     </motion.div>
                                 ))
