@@ -204,6 +204,7 @@ const Project = () => {
         appendOutgoingMessage({ message, sender: user });
         toast.success('Message Sent');
         setMessage('');
+        fullScreenScroll()
     };
 
     const appendIncomingMessage = (messageObject) => {
@@ -320,11 +321,15 @@ const Project = () => {
     }
 
     useEffect(() => {
+        fullScreenScroll();
+    }, [])
+
+    const fullScreenScroll = () => {
         window.scrollTo({
             top: 0,
             behavior: "smooth",
         });
-    }, [])
+    }
 
     return (
         <>
