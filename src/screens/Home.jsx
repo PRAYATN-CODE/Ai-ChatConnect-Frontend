@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import AddIcon from "../assets/AddIcon.jsx";
+import DeleteIcon from "../assets/DeleteIcon.jsx";
 import UserIcon from '../assets/UserIcon.jsx';
 import axios from '../config/axios.js';
 import UserContext from '../context/userContext.jsx';
@@ -16,6 +17,9 @@ const Home = () => {
     const [projectName, setProjectName] = useState(null);
     const [project, setProject] = useState([])
     const [projectLoading, setProjectLoading] = useState(false);
+    const [deleteModal, setDeleteModal] = useState(false);
+    const [deleteProjectId, setDeleteProjectId] = useState(null);
+    const [adminId, setAdminId] = useState(null);
 
     const handlelogout = () => {
         localStorage.setItem('token', '');
@@ -76,6 +80,31 @@ const Home = () => {
         }
     }, []);
 
+    useEffect(() => {
+        if (user && user._id) {
+            setAdminId(user._id);
+        }
+
+        console.log("the user is", user, "and the id is ", user._id)
+    }, [user]);
+
+    const deleteProject = () => {
+        axios.delete(`/projects/delete-project/${deleteProjectId}`, {
+            headers: {
+                'Authorization': `${localStorage.getItem('token')}`,
+            }
+        }).then((res) => {
+            toast.success('Project Deleted Successfully')
+            fetchProjects();
+            setDeleteModal(false);
+            setDeleteProjectId(null);
+        }).catch((err) => {
+            console.log(err)
+            toast.error('Error Deleting Project')
+            setDeleteModal(false);
+        })
+    }
+
 
     return (
         <>
@@ -125,6 +154,44 @@ const Home = () => {
                     </div>
                 )}
             </div>
+
+
+
+
+
+            {deleteModal && <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                <div className="bg-white flex flex-col items-center justify-around rounded-xl shadow-2xl p-6 w-[90%] max-w-[400px] h-[300px]">
+                    {/* Modal Header */}
+                    <div className="text-center">
+                        <h2 className="text-black text-2xl font-bold">Delete Project</h2>
+                        <p className="text-gray-600 mt-2 text-base leading-relaxed">
+                            Are you sure you want to delete this project? This action cannot be undone.
+                        </p>
+                    </div>
+
+                    <div className="bg-gray-500 h-[2px] w-full rounded-full"></div>
+
+                    {/* Modal Buttons */}
+                    <div className="flex justify-center gap-6">
+                        <button
+                            className="bg-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-red-500 transition-all duration-300 ease-in-out transform hover:scale-105"
+                            onClick={() => deleteProject()}
+                        >
+                            Delete
+                        </button>
+                        <button
+                            className="bg-gray-100 text-gray-800 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-gray-200 transition-all duration-300 ease-in-out transform hover:scale-105"
+                            onClick={() => setDeleteModal(false)}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>}
+
+
+
+
 
 
             <div className="min-h-screen bg-gradient-to-r from-indigo-600 to-blue-500 text-white">
@@ -224,13 +291,7 @@ const Home = () => {
                             {project && project.length > 0 ? (
                                 project.map((project, index) => (
                                     <motion.div
-                                        onClick={() => {
-                                            navigate(`/project`, {
-                                                state: {
-                                                    project,
-                                                },
-                                            })
-                                        }}
+
                                         key={project._id}
                                         className="min-h-40 h-fit p-6 bg-gradient-to-r from-indigo-600 to-blue-500 rounded-lg shadow-lg"
                                         initial={{ y: 50, opacity: 0 }}
@@ -241,10 +302,29 @@ const Home = () => {
                                         <p key={index} className="text-white">
                                             <span className="font-mono">Click to Start Working with Your Team and AI to Create Something Amazing!</span>
                                         </p>
-                                        <p className="text-white mt-2 flex items-center space-x-2">
+                                        <p className="text-white flex items-center space-x-2 mt-3">
                                             <UserIcon />
                                             <span>{project.users.length}</span>
                                         </p>
+                                        <div className="flex items-end justify-start gap-3 pt-4">
+                                            <button
+                                                onClick={() => {
+                                                    navigate(`/project`, {
+                                                        state: {
+                                                            project,
+                                                        },
+                                                    })
+                                                }}
+                                                className="bg-yellow-400 text-black w-[90px] h-[45px] text-xl font-semibold rounded-lg hover:bg-yellow-500 hover:shadow-lg hover:scale-110 transition duration-500">Join</button>
+                                            {project.admin === adminId && <button
+                                                onClick={() => {
+                                                    setDeleteProjectId(project._id)
+                                                    setDeleteModal(true)
+                                                }}
+                                                className="bg-transparent border border-white w-[90px] h-[45px] rounded-lg hover:bg-blue-700 hover:shadow-lg hover:scale-110 transition duration-500 flex items-center justify-center">
+                                                <DeleteIcon />
+                                            </button>}
+                                        </div>
                                     </motion.div>
                                 ))
                             ) : (
