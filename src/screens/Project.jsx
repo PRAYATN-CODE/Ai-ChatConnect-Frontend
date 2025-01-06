@@ -55,6 +55,10 @@ const Project = () => {
     const [uploadModal, setUploadModal] = useState(false)
     const [uploadProfileImageLoader, setUploadProfileImageLoader] = useState(false)
     const [userProfileDetail, setUserProfileDetail] = useState('')
+    const [deleteUserLoader, setDeleteUserLoader] = useState(false)
+    const [addUserLoader, setAddUserLoader] = useState(false)
+
+
 
     const playIncomingAudio = () => {
         try {
@@ -95,6 +99,7 @@ const Project = () => {
     };
 
     const deleteUserFromProject = (userId, userName) => {
+        setDeleteUserLoader(true)
         axios.put('/projects/delete-user', {
             projectId: location.state.project._id,
             userId: userId
@@ -105,17 +110,22 @@ const Project = () => {
         }).then((res) => {
             getProjectById()
             getAllUsers();
+            setDeleteUserLoader(false)
+            setActiveUserId(null);
             toast.success(`${userName} Removed Successfully`)
         }).catch((err) => {
             console.error(err);
+            setDeleteUserLoader(false)
+            setActiveUserId(null);
             toast.error(`Failed to Remove User: ${err.response?.data?.message || err.message}`);
         });
     }
 
     function addCollaborator() {
-
+        setAddUserLoader(true)
         if (!project.admin === ProjectUser._id) {
             toast.warning('Only Admin can add users')
+            setAddUserLoader(false)
             return
         }
 
@@ -128,12 +138,14 @@ const Project = () => {
             }
         }).then((res) => {
             setIsModalOpen(false)
+            setAddUserLoader(false)
             setSelectedUserId([])
             getProjectById()
             getAllUsers();
             toast.success('User Added Successfully')
         }).catch((err) => {
             console.log(err)
+            setAddUserLoader(false)
             if (err.response.data.error === 'Only the Project Admin can add users') {
                 toast.error('Only the Project Admin can add users')
             } else {
@@ -235,13 +247,12 @@ const Project = () => {
 
     const send = () => {
         if (message.trim() === "") return;
-
+        handleSendMessageSound()
         sendMessage('project-message', {
             message,
             sender: user
         });
         appendOutgoingMessage({ message, sender: user });
-        handleSendMessageSound()
         setMessage('');
         fullScreenScroll()
     };
@@ -251,7 +262,7 @@ const Project = () => {
             console.error("Message sender or sender _id is missing:", messageObject);
             return;
         }
-
+        handleReceiveMessageSound();
         setMessages(prevMessages => [
             ...prevMessages,
             {
@@ -262,7 +273,6 @@ const Project = () => {
                 isOutgoing: false,
             },
         ]);
-        handleReceiveMessageSound();
         scrollToBottom();
     };
 
@@ -507,9 +517,9 @@ const Project = () => {
                                 messages.map((msg, index) => (
                                     <motion.div
                                         key={index}
-                                        initial={{ scale: 0.8, opacity: 0 }}
+                                        initial={{ scale: 0.9, opacity: 0 }}
                                         whileInView={{ scale: 1, opacity: 1 }}
-                                        transition={{ duration: 0.3, delay: 0.1 }}
+                                        transition={{ duration: 0.2, ease: "easeInOut" }}
                                         className={`flex mt-4 ${msg.isOutgoing ? 'justify-end' : 'justify-start'}`}>
                                         <div className={`flex flex-col ${msg.isOutgoing ? 'items-end' : 'items-start'}`}>
                                             <div className={`p-2 text-gray-600 ${msg.isOutgoing ? 'text-right' : 'text-left'}`}>
@@ -566,7 +576,7 @@ const Project = () => {
                         </motion.div>
                     </div>
 
-                    <div className={`sidepanel w-full lg:w-[480px] h-full bg-blue-500 absolute lg:-left-[480px] -left-full top-0 transform ${isSidePanelOpen ? 'lg:translate-x-[480px] translate-x-full opacity-100' : 'opacity-70'} transition-transform duration-300`}>
+                    <div className={`sidepanel w-full lg:w-[480px] h-[100%] bg-blue-500 absolute lg:-left-[480px] -left-full top-0 transform ${isSidePanelOpen ? 'lg:translate-x-[480px] translate-x-full opacity-100' : 'opacity-70'} transition-transform duration-300`}>
                         <header className="flex justify-between items-center p-2 px-4 w-full bg-blue-800 shadow-md">
                             <h1 className='text-white text-xl font-bold'>Collaborators Members</h1>
                             <button onClick={() => setIsSidePanelOpen(!isSidePanelOpen)} className="w-[50px] h-[50px] flex justify-center items-center rounded-full bg-blue-600 hover:bg-blue-700 transition duration-300">
@@ -624,29 +634,36 @@ const Project = () => {
                                                 initial={{ opacity: 0, y: -20 }}
                                                 animate={{ opacity: 1, y: 0 }}
                                                 exit={{ opacity: 0, y: 0 }}
-                                                transition={{ duration: 0.5, ease: 'easeOut' }}
-                                                className="absolute top-full mt-2 right-0 bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-6 rounded-lg shadow-xl w-64 text-center z-10">
+                                                transition={{ duration: 0.4, ease: 'easeOut' }}
+                                                className={`absolute overflow-x-hidden border-4 border-blue-400 top-full mt-2 right-0 bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-6 rounded-lg shadow-xl w-64 text-center z-10 ${deleteUserLoader ? 'pointer-events-none' : ''
+                                                    }`}
+                                            >
+                                                {deleteUserLoader && <SlideBar />}
                                                 <p className="text-white text-sm mb-4 font-medium">
                                                     Are you sure you want to remove <span className="font-semibold">{user.name}</span>?
                                                 </p>
                                                 <div className="flex justify-center gap-3">
                                                     <button
-                                                        className="bg-red-600 text-white text-sm px-5 py-3 rounded-md shadow hover:bg-red-700 hover:shadow-lg hover:scale-110 transition-all duration-300 ease-in-out"
+                                                        className={`${deleteUserLoader ? 'cursor-not-allowed opacity-70' : ''} bg-red-600 text-white text-sm px-5 py-3 rounded-md shadow hover:bg-red-700 hover:shadow-lg hover:scale-110 transition-all duration-300 ease-in-out`}
                                                         onClick={() => {
-                                                            deleteUserFromProject(user._id, user.name);
-                                                            setActiveUserId(null); // Close popup after deletion
+                                                            if (!deleteUserLoader) {
+                                                                deleteUserFromProject(user._id, user.name);
+                                                            }
                                                         }}
                                                     >
                                                         Remove
                                                     </button>
                                                     <button
                                                         className="bg-white text-gray-800 text-sm px-5 py-3 rounded-md shadow hover:bg-gray-300 hover:shadow-lg hover:scale-110 transition-all duration-300 ease-in-out"
-                                                        onClick={() => setActiveUserId(null)}
+                                                        onClick={() => {
+                                                            if (!deleteUserLoader) setActiveUserId(null);
+                                                        }}
                                                     >
                                                         Cancel
                                                     </button>
                                                 </div>
                                             </motion.div>
+
                                         )}
 
                                     </motion.div>
@@ -776,7 +793,6 @@ const Project = () => {
                 </section>
 
             </main >
-
 
             {uploadModal &&
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -908,8 +924,6 @@ const Project = () => {
                 </div>
             }
 
-
-
             {
                 isModalOpen && (
                     <div className="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center z-50">
@@ -917,7 +931,8 @@ const Project = () => {
                             initial={{ opacity: 0, scale: 0.7 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.3, ease: "easeInOut" }}
-                            className="bg-white w-full max-w-md rounded-2xl shadow-2xl md:p-8 p-4 md:max-w-lg relative mx-4">
+                            className={`${addUserLoader ? 'pointer-events-none opacity-80 bg-gray-100' : '' } overflow-x-hidden bg-white w-full max-w-md rounded-2xl shadow-2xl md:p-8 p-4 md:max-w-lg relative mx-4`}>
+                            {addUserLoader && <SlideBar />}
                             <h2 className="md:text-3xl text-2xl font-bold text-blue-700 md:mb-6 mb-4 text-center">
                                 Recruit User
                             </h2>
@@ -984,7 +999,7 @@ const Project = () => {
                             </ul>
                             <div className="md:mt-8 mt-4 flex justify-between items-center">
                                 <button
-                                    className="md:px-6 md:py-3 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:shadow-xl transition-transform transform"
+                                    className={` ${addUserLoader ? 'opacity-70 cursor-not-allowed' : ''} md:px-6 md:py-3 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:shadow-xl transition-transform transform`}
                                     onClick={addCollaborator}
                                 >
                                     Add User

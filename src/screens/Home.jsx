@@ -30,7 +30,8 @@ const Home = () => {
     const [uploadStatus, setUploadStatus] = useState("");
     const [uploadModal, setUploadModal] = useState(false)
     const [uploadProfileImageLoader, setUploadProfileImageLoader] = useState(false)
-
+    const [deleteRoomLoader, setDeleteRoomLoader] = useState(false);
+    const [createRoomLoader, setCreateRoomLoader] = useState(false);
 
     const handlelogout = () => {
         localStorage.setItem('token', '');
@@ -51,6 +52,7 @@ const Home = () => {
 
     function createProject(e) {
         e.preventDefault();
+        setCreateRoomLoader(true)
         axios.post('/projects/create', {
             name: projectName,
         }, {
@@ -59,10 +61,12 @@ const Home = () => {
             }
         }).then((res) => {
             setIsModalOpen(false)
+            setCreateRoomLoader(false)
             toast.success('Project Created Successfully')
             fetchProjects();
         }).catch((err) => {
             console.log(err)
+            setCreateRoomLoader(false)
             toast.error('Error Creating Project')
         })
     }
@@ -91,18 +95,21 @@ const Home = () => {
     }, []);
 
     const deleteProject = () => {
+        setDeleteRoomLoader(true)
         axios.delete(`/projects/delete-project/${deleteProjectId}`, {
             headers: {
                 'Authorization': `${localStorage.getItem('token')}`,
             }
         }).then((res) => {
             toast.success('Project Deleted Successfully')
-            fetchProjects();
+            setDeleteRoomLoader(false)
             setDeleteModal(false);
+            fetchProjects();
             setDeleteProjectId(null);
         }).catch((err) => {
             console.log(err)
             toast.error('Error Deleting Project')
+            setDeleteRoomLoader(false)
             setDeleteModal(false);
         })
     }
@@ -180,7 +187,7 @@ const Home = () => {
 
     const handleTutorialScroll = () => {
         window.scrollTo({
-            top: 1800,
+            top: 1750,
             behavior: "smooth",
         });
     }
@@ -190,22 +197,40 @@ const Home = () => {
             <div>
                 {/* Modal */}
                 {isModalOpen && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
-                        <div className="relative flex w-96 flex-col rounded-xl bg-white text-gray-700 shadow-md">
+                    <div
+                        className={`fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 ${createRoomLoader ? 'pointer-events-none' : ''
+                            }`}
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            transition={{ duration: 0.3, ease: 'easeOut' }}
+                            className="relative flex w-96 flex-col rounded-xl bg-white text-gray-700 shadow-md">
                             {/* Modal Header */}
                             <div className="relative mx-4 -mt-6 mb-4 grid h-28 place-items-center overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 to-blue-500 text-white shadow-lg">
+                                {createRoomLoader && <SlideBar />}
                                 <h3 className="block text-3xl font-semibold">Start Creating Now.</h3>
                             </div>
 
                             {/* Modal Content */}
-                            <form onSubmit={createProject} className="flex flex-col gap-4 p-6">
-                                {/* Email Input */}
+                            <form
+                                onSubmit={(e) => {
+                                    if (!createRoomLoader) createProject(e);
+                                }}
+                                className="flex flex-col gap-4 p-6"
+                            >
+                                {/* Room Name Input */}
                                 <div className="relative h-11 w-full">
                                     <input
-                                        onChange={(e) => setProjectName(e.target.value)}
+                                        onChange={(e) => {
+                                            if (!createRoomLoader) setProjectName(e.target.value);
+                                        }}
                                         placeholder=""
-                                        className="peer h-full w-full rounded-md border border-blue-gray-200 border-t-transparent bg-transparent px-3 py-3 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-indigo-600 focus:border-t-transparent focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50"
+                                        className={`${createRoomLoader ? 'cursor-not-allowed' : ''
+                                            } peer h-full w-full rounded-md border border-blue-gray-200 border-t-transparent bg-transparent px-3 py-3 font-sans text-sm font-normal text-blue-gray-700 outline outline-0 transition-all placeholder-shown:border placeholder-shown:border-blue-gray-200 placeholder-shown:border-t-blue-gray-200 focus:border-2 focus:border-indigo-600 focus:border-t-transparent focus:outline-0 disabled:border-0 disabled:bg-blue-gray-50`}
                                         type="text"
+                                        disabled={createRoomLoader}
                                     />
                                     <label
                                         className="before:content[' '] after:content[' '] pointer-events-none absolute left-0 -top-1.5 flex h-full w-full select-none text-[11px] font-normal leading-tight text-blue-gray-400 transition-all before:pointer-events-none before:mt-[6.5px] before:mr-1 before:box-border before:block before:h-1.5 before:w-2.5 before:rounded-tl-md before:border-t before:border-l before:border-blue-gray-200 before:transition-all after:pointer-events-none after:mt-[6.5px] after:ml-1 after:box-border after:block after:h-1.5 after:w-2.5 after:flex-grow after:rounded-tr-md after:border-t after:border-r after:border-blue-gray-200 after:transition-all peer-placeholder-shown:text-sm peer-placeholder-shown:leading-[4.1] peer-placeholder-shown:text-blue-gray-500 peer-placeholder-shown:before:border-transparent peer-placeholder-shown:after:border-transparent peer-focus:text-[11px] peer-focus:leading-tight peer-focus:text-indigo-600 peer-focus:before:border-t-2 peer-focus:before:border-l-2 peer-focus:before:!border-indigo-600 peer-focus:after:border-t-2 peer-focus:after:border-r-2 peer-focus:after:!border-indigo-600 peer-disabled:text-transparent peer-disabled:before:border-transparent peer-disabled:after:border-transparent peer-disabled:peer-placeholder-shown:text-blue-gray-500"
@@ -214,8 +239,10 @@ const Home = () => {
                                     </label>
                                 </div>
                                 <button
+                                    disabled={createRoomLoader}
                                     type="submit"
-                                    className="block w-full py-3 px-6 rounded-lg bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold shadow-md hover:shadow-lg"
+                                    className={`${createRoomLoader ? 'cursor-not-allowed disabled:opacity-50' : ''
+                                        } block w-full py-3 px-6 rounded-lg bg-gradient-to-r from-indigo-500 to-blue-500 text-white font-bold shadow-md hover:shadow-lg`}
                                 >
                                     Create
                                 </button>
@@ -223,14 +250,22 @@ const Home = () => {
 
                             {/* Modal Footer */}
                             <div className="p-6 pt-0">
-                                <p className=" text-center text-sm">
-                                    <button onClick={handleCloseModal} className="text-[#4f46e5] font-bold">
+                                <p className="text-center text-sm">
+                                    <button
+                                        disabled={createRoomLoader}
+                                        onClick={() => {
+                                            if (!createRoomLoader) handleCloseModal();
+                                        }}
+                                        className={`${createRoomLoader ? 'cursor-not-allowed disabled:opacity-50' : ''
+                                            } text-[#4f46e5] font-bold`}
+                                    >
                                         Back
                                     </button>
                                 </p>
                             </div>
-                        </div>
+                        </motion.div>
                     </div>
+
                 )}
             </div>
 
@@ -240,8 +275,11 @@ const Home = () => {
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
                     transition={{ duration: 0.3, ease: 'easeOut' }}
-                    className="bg-white flex flex-col items-center justify-around rounded-xl shadow-2xl p-6 w-[90%] max-w-[400px] h-[300px]">
+                    className={`absolute overflow-x-hidden bg-white flex flex-col items-center justify-around rounded-xl shadow-2xl p-6 w-[90%] max-w-[400px] h-[300px] ${deleteRoomLoader ? 'pointer-events-none' : ''
+                        }`}
+                >
                     {/* Modal Header */}
+                    {deleteRoomLoader && <SlideBar />}
                     <div className="text-center">
                         <h2 className="text-black text-2xl font-bold">Delete Project</h2>
                         <p className="text-gray-600 mt-2 text-base leading-relaxed">
@@ -254,21 +292,27 @@ const Home = () => {
                     {/* Modal Buttons */}
                     <div className="flex justify-center gap-6">
                         <button
-                            className="bg-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-red-500 transition-all duration-300 ease-in-out transform hover:scale-105"
-                            onClick={() => deleteProject()}
+                            className={`${deleteRoomLoader ? 'pointer-events-none bg-red-400' : ''
+                                } bg-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-red-500 transition-all duration-300 ease-in-out transform hover:scale-105`}
+                            onClick={() => {
+                                if (!deleteRoomLoader) deleteProject();
+                            }}
                         >
                             Delete
                         </button>
                         <button
-                            className="bg-gray-100 text-gray-800 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-gray-200 transition-all duration-300 ease-in-out transform hover:scale-105"
-                            onClick={() => setDeleteModal(false)}
+                            className={`${deleteRoomLoader ? 'cursor-not-allowed disabled:opacity-70' : ''
+                                } bg-gray-100 text-gray-800 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-gray-200 transition-all duration-300 ease-in-out transform hover:scale-105`}
+                            onClick={() => {
+                                if (!deleteRoomLoader) setDeleteModal(false);
+                            }}
                         >
                             Cancel
                         </button>
                     </div>
                 </motion.div>
-            </div>}
 
+            </div>}
 
             {uploadModal &&
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -437,6 +481,11 @@ const Home = () => {
                             onClick={handleTutorialScroll}
                             className="hover:text-yellow-400">
                             Tutorial
+                        </button>
+                        <button
+                            onClick={() => navigate('/about')}
+                            className="hover:text-yellow-400">
+                            About
                         </button>
 
                     </motion.div>
@@ -677,7 +726,7 @@ const Home = () => {
                 <TutorialPage />
 
                 {/* About Section */}
-                <section id="about" className="py-16 bg-gradient-to-r from-indigo-600 to-blue-500 text-white">
+                <section id="about" className="py-16 flex flex-col items-center justify-center gap-8 bg-gradient-to-r from-indigo-600 to-blue-500 text-white">
                     <motion.div
                         className="max-w-6xl mx-auto text-center"
                         initial={{ opacity: 0 }}
@@ -689,11 +738,20 @@ const Home = () => {
                             AI-ChatConnect is a modern communication platform designed to simplify and secure your online interactions. Whether you're chatting with friends, collaborating with a team, or connecting with family, we've got you covered.
                         </p>
                     </motion.div>
+                    <motion.button
+                        className="bg-gradient-to-r from-indigo-600 to-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-800 mt-6 shadow-xl"
+                        initial={{ y: 50, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ duration: 0.8, delay: 0.6 }}
+                        onClick={() => navigate('/about')}
+                    >
+                        Go to About Page
+                    </motion.button>
                 </section>
 
                 {/* Footer */}
                 <footer className="bg-indigo-800 py-6 text-center text-white">
-                    © 2024 AI-ChatConnect. All rights reserved.
+                    © 2025 AI-ChatConnect. All rights reserved.
                 </footer>
             </div>
         </>

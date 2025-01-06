@@ -4,16 +4,9 @@ import React from 'react';
 
 const TutorialPage = () => {
 
-    const fullScreenScroll = () => {
-        window.scrollTo({
-            top: 400,
-            behavior: "smooth",
-        });
-    }
-
     return (
         <div className="bg-gray-50 min-h-screen p-6">
-            <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-10">
+            <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg md:p-10 p-2 py-6 md:py-10">
                 <motion.h1
                     className="text-4xl font-bold text-blue-600 text-center mb-10"
                     initial={{ opacity: 0, y: -50 }}
@@ -26,7 +19,7 @@ const TutorialPage = () => {
                 <div className="space-y-14">
                     {/* Section 1 */}
                     <motion.div
-                        className="space-y-4 border-2 border-blue-300 p-6 rounded-lg shadow-md"
+                        className="space-y-4 border-2 border-blue-300 md:p-6 p-4 rounded-lg shadow-md"
                         initial={{ opacity: 0, x: -50 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ duration: 1, ease: "easeOut" }}
@@ -39,7 +32,7 @@ const TutorialPage = () => {
                             <motion.img
                                 src="https://i.imgur.com/OFzPp7m.png"
                                 alt="Sign In"
-                                className="w-full max-w-2xl h-auto rounded-lg shadow-xl mx-auto"
+                                className="w-full h-auto rounded-lg shadow-xl mx-auto"
                                 initial={{ opacity: 0, scale: 0.9 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ duration: 1, ease: "easeOut" }}
@@ -49,7 +42,7 @@ const TutorialPage = () => {
 
                     {/* Section 2 */}
                     <motion.div
-                        className="space-y-4 border-2 border-blue-300 p-6 rounded-lg shadow-md"
+                        className="space-y-4 border-2 border-blue-300 md:p-6 p-4 rounded-lg shadow-md"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 1, ease: "easeOut" }}
@@ -67,7 +60,7 @@ const TutorialPage = () => {
                                 <img
                                     src="https://iili.io/2g20ICF.jpg"
                                     alt="Load Room"
-                                    className="w-full max-w-xs h-auto rounded-lg shadow-xl"
+                                    className="w-full md:w-[300px] h-auto rounded-lg shadow-xl"
                                 />
                             </motion.div>
                             <motion.div
@@ -78,7 +71,7 @@ const TutorialPage = () => {
                                 <img
                                     src="https://iili.io/2g2VQ49.md.jpg"
                                     alt="Create Room"
-                                    className="w-full max-w-xs h-auto rounded-lg shadow-xl"
+                                    className="w-full md:w-[300px] h-auto rounded-lg shadow-xl"
                                 />
                             </motion.div>
                             <motion.div
@@ -89,7 +82,7 @@ const TutorialPage = () => {
                                 <img
                                     src="https://iili.io/2g2jdCl.md.jpg"
                                     alt="Enter Room"
-                                    className="w-full max-w-xs h-auto rounded-lg shadow-xl"
+                                    className="w-full md:w-[300px] h-auto rounded-lg shadow-xl"
                                 />
                             </motion.div>
                             <motion.div
@@ -100,7 +93,7 @@ const TutorialPage = () => {
                                 <img
                                     src="https://iili.io/2g2wBKN.md.jpg"
                                     alt="Join Room"
-                                    className="w-full max-w-xs h-auto rounded-lg shadow-xl"
+                                    className="w-full md:w-[300px] h-auto rounded-lg shadow-xl"
                                 />
                             </motion.div>
                         </div>
@@ -108,7 +101,7 @@ const TutorialPage = () => {
 
                     {/* Section 3 */}
                     <motion.div
-                        className="space-y-4 border-2 border-blue-300 p-6 rounded-lg shadow-md"
+                        className="space-y-4 border-2 border-blue-300 md:p-6 p-4 rounded-lg shadow-md"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 1, ease: "easeOut" }}
@@ -126,7 +119,7 @@ const TutorialPage = () => {
                                 <img
                                     src="https://iili.io/2g2gION.md.jpg"
                                     alt="Manage Users"
-                                    className="w-full max-w-xs h-auto rounded-lg shadow-xl"
+                                    className="w-full md:w-[300px] h-auto rounded-lg shadow-xl"
                                 />
                             </motion.div>
                             <motion.div
@@ -137,7 +130,7 @@ const TutorialPage = () => {
                                 <img
                                     src="https://iili.io/2g2gw0b.md.jpg"
                                     alt="Real-time Chat"
-                                    className="w-full max-w-xs h-auto rounded-lg shadow-xl"
+                                    className="w-full md:w-[300px] h-auto rounded-lg shadow-xl"
                                 />
                             </motion.div>
                             <motion.div
@@ -148,7 +141,7 @@ const TutorialPage = () => {
                                 <img
                                     src="https://iili.io/2g2gbII.md.jpg"
                                     alt="Message History"
-                                    className="w-full max-w-xs h-auto rounded-lg shadow-xl"
+                                    className="w-full md:w-[300px] h-auto rounded-lg shadow-xl"
                                 />
                             </motion.div>
                         </div>
@@ -156,7 +149,7 @@ const TutorialPage = () => {
 
                     {/* Section 4 */}
                     <motion.div
-                        className="space-y-4 border-2 border-blue-300 p-6 rounded-lg shadow-md"
+                        className="space-y-4 border-2 border-blue-300 md:p-6 p-4 rounded-lg shadow-md"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 1, ease: "easeOut" }}
@@ -174,7 +167,7 @@ const TutorialPage = () => {
                                 <img
                                     src="https://iili.io/2g2irle.md.jpg"
                                     alt="AI Chat"
-                                    className="w-full max-w-xs h-auto rounded-lg shadow-xl"
+                                    className="w-full md:w-[300px] h-auto rounded-lg shadow-xl"
                                 />
                             </motion.div>
                             <motion.div
@@ -185,7 +178,7 @@ const TutorialPage = () => {
                                 <img
                                     src="https://iili.io/2g2sBft.md.jpg"
                                     alt="AI Response"
-                                    className="w-full max-w-xs h-auto rounded-lg shadow-xl"
+                                    className="w-full md:w-[300px] h-auto rounded-lg shadow-xl"
                                 />
                             </motion.div>
                         </div>
@@ -193,7 +186,7 @@ const TutorialPage = () => {
 
                     {/* Section 5 */}
                     <motion.div
-                        className="space-y-4 border-2 border-blue-300 p-6 rounded-lg shadow-md"
+                        className="space-y-4 border-2 border-blue-300 md:p-6 p-4 rounded-lg shadow-md"
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
                         transition={{ duration: 1, ease: "easeOut" }}
@@ -210,7 +203,7 @@ const TutorialPage = () => {
                             >
                                 <img
                                     src="https://iili.io/2g2pfl2.md.jpg"
-                                    className="w-full max-w-xs h-auto rounded-lg shadow-xl"
+                                    className="w-full md:w-[300px] h-auto rounded-lg shadow-xl"
                                 />
                             </motion.div>
                             <motion.div
@@ -220,7 +213,7 @@ const TutorialPage = () => {
                             >
                                 <img
                                     src="https://iili.io/2g2p0Dg.md.jpg"
-                                    className="w-full max-w-xs h-auto rounded-lg shadow-xl"
+                                    className="w-full md:w-[300px] h-auto rounded-lg shadow-xl"
                                 />
                             </motion.div>
                         </div>
@@ -228,12 +221,6 @@ const TutorialPage = () => {
                 </div>
             </div>
         </div>
-
-
-
-
-
-
     );
 };
 
