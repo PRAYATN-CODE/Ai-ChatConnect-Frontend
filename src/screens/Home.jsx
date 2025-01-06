@@ -62,7 +62,6 @@ const Home = () => {
         }).then((res) => {
             setIsModalOpen(false)
             setCreateRoomLoader(false)
-            toast.success('Project Created Successfully')
             fetchProjects();
         }).catch((err) => {
             console.log(err)
@@ -80,7 +79,6 @@ const Home = () => {
         }).then((res) => {
             setProject(res.data.Projects);
             setProjectLoading(false);
-            toast.success('Projects Loaded Successfully')
         }).catch((error) => {
             console.error("Error fetching projects:", error);
             setProjectLoading(false);
@@ -101,7 +99,6 @@ const Home = () => {
                 'Authorization': `${localStorage.getItem('token')}`,
             }
         }).then((res) => {
-            toast.success('Project Deleted Successfully')
             setDeleteRoomLoader(false)
             setDeleteModal(false);
             fetchProjects();
@@ -173,7 +170,7 @@ const Home = () => {
             console.log(response.data);
             setUploadModal(false)
             setUploadProfileImageLoader(false)
-            toast.success('Image Uploaded Successfully')
+            toast.success('Image Uploaded')
             getUserProfile()
         } catch (error) {
             console.error("Error uploading image:", error);

@@ -8,7 +8,13 @@ const App = () => {
     <>
       <UserProvider>
         <AppRoutes />
-        <ToastContainer />
+        <ToastContainer
+          autoClose={2000}
+          draggable={true}
+          pauseOnHover={false}
+          newestOnTop={false}
+          limit={2}
+        />
       </UserProvider>
     </>
   )
