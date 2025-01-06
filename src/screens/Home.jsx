@@ -4,10 +4,13 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import AddIcon from "../assets/AddIcon.jsx";
 import DeleteIcon from "../assets/DeleteIcon.jsx";
+import ProfileImageIcon from "../assets/ProfileImageIcon.jsx";
 import UserIcon from '../assets/UserIcon.jsx';
 import axios from '../config/axios.js';
 import UserContext from '../context/userContext.jsx';
 import ProjectSkeleton from "../loaders/ProjectSkeleton.jsx";
+import SlideBar from "../loaders/SlideBar.jsx";
+import TutorialPage from "./TutorialPage.jsx";
 
 const Home = () => {
 
@@ -21,14 +24,21 @@ const Home = () => {
     const [deleteProjectId, setDeleteProjectId] = useState(null);
     const [adminId, setAdminId] = useState(localStorage.getItem('user'));
     const loggedInUser = JSON.parse(localStorage.getItem('user'))
+    const [userProfileDetail, setUserProfileDetail] = useState('')
+    const [file, setFile] = useState(null);
+    const [preview, setPreview] = useState("");
+    const [uploadStatus, setUploadStatus] = useState("");
+    const [uploadModal, setUploadModal] = useState(false)
+    const [uploadProfileImageLoader, setUploadProfileImageLoader] = useState(false)
+
 
     const handlelogout = () => {
         localStorage.setItem('token', '');
         localStorage.removeItem('user');
+        toast.success('Logged Out Successfully');
         setUser('')
         window.location.href = '/';
         window.location.reload();
-        toast.success('Logged Out Successfully');
     }
 
     const handleOpenModal = () => {
@@ -69,7 +79,6 @@ const Home = () => {
             toast.success('Projects Loaded Successfully')
         }).catch((error) => {
             console.error("Error fetching projects:", error);
-            console.log(localStorage.getItem('token'));
             setProjectLoading(false);
             toast.error('Error Loading Projects')
         });
@@ -98,6 +107,83 @@ const Home = () => {
         })
     }
 
+    const getUserProfile = async () => {
+        axios.get('/users/profile', {
+            headers: {
+                Authorization: `${localStorage.getItem('token')}`
+            }
+        }).then((res) => {
+            setUserProfileDetail(res.data.user)
+        }).catch((err) => {
+            console.log(err)
+        })
+    }
+
+    useEffect(() => {
+        getUserProfile()
+    }, [])
+
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files && e.target.files[0]; // Ensure a file is selected
+
+        if (selectedFile) {
+            setFile(selectedFile);
+
+            // Generate a preview of the selected image
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreview(reader.result);
+            };
+            reader.readAsDataURL(selectedFile);
+        } else {
+            console.error("No file selected");
+        }
+    };
+
+    const handleUpload = async (e) => {
+        e.preventDefault();
+        setUploadProfileImageLoader(true)
+        if (!file) {
+            setUploadStatus("Please select a file to upload.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("profileImage", file);
+
+        try {
+            const response = await axios.post('/profile/upload-profile-image',
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        Authorization: `${localStorage.getItem('token')}`,
+                    },
+                }
+            );
+
+            setUploadStatus("Image uploaded successfully!");
+            console.log(response.data);
+            setUploadModal(false)
+            setUploadProfileImageLoader(false)
+            toast.success('Image Uploaded Successfully')
+            getUserProfile()
+        } catch (error) {
+            console.error("Error uploading image:", error);
+            setUploadStatus("Error uploading image. Please try again.");
+            setUploadModal(false)
+            setUploadProfileImageLoader(false)
+            getProjectById()
+            toast.error('Something went Wrong')
+        }
+    };
+
+    const handleTutorialScroll = () => {
+        window.scrollTo({
+            top: 1800,
+            behavior: "smooth",
+        });
+    }
 
     return (
         <>
@@ -148,12 +234,13 @@ const Home = () => {
                 )}
             </div>
 
-
-
-
-
             {deleteModal && <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                <div className="bg-white flex flex-col items-center justify-around rounded-xl shadow-2xl p-6 w-[90%] max-w-[400px] h-[300px]">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                    className="bg-white flex flex-col items-center justify-around rounded-xl shadow-2xl p-6 w-[90%] max-w-[400px] h-[300px]">
                     {/* Modal Header */}
                     <div className="text-center">
                         <h2 className="text-black text-2xl font-bold">Delete Project</h2>
@@ -179,23 +266,165 @@ const Home = () => {
                             Cancel
                         </button>
                     </div>
-                </div>
+                </motion.div>
             </div>}
 
 
+            {uploadModal &&
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.7 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        transition={{ duration: 0.5, ease: "easeInOut" }}
+                        className="absolute overflow-hidden bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
+                        {/* Modal Header */}
+                        {uploadProfileImageLoader && <SlideBar />}
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-semibold text-gray-800">
+                                Upload a File
+                            </h2>
+                            <button
+                                className="text-gray-600 hover:text-gray-900"
+                                onClick={() => setUploadModal(false)}
+                            >
+                                ✕
+                            </button>
+                        </div>
 
+                        {/* Upload Component */}
+                        <div className="h-auto w-full rounded-lg shadow-lg flex flex-col items-center justify-between p-4 gap-4 bg-blue-100">
+                            {/* Preview Section */}
+                            {preview ? (
+                                <div className="flex-1 w-full rounded-lg overflow-hidden border-2 border-blue-500">
+                                    <img
+                                        src={preview}
+                                        alt="Selected File"
+                                        className="w-full h-48 object-cover"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="flex-1 w-full border-2 border-dashed border-blue-500 rounded-lg flex flex-col items-center justify-center">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-24"
+                                    >
+                                        <path
+                                            d="M7 10V9C7 6.23858 9.23858 4 12 4C14.7614 4 17 6.23858 17 9V10C19.2091 10 21 11.7909 21 14C21 15.4806 20.1956 16.8084 19 17.5M7 10C4.79086 10 3 11.7909 3 14C3 15.4806 3.8044 16.8084 5 17.5M7 10C7.43285 10 7.84965 10.0688 8.24006 10.1959M12 12V21M12 12L15 15M12 12L9 15"
+                                            stroke="#000000"
+                                            strokeWidth="1.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        ></path>
+                                    </svg>
+                                    <p className="text-center text-black">
+                                        Browse file to upload!
+                                    </p>
+                                </div>
+                            )}
 
+                            {/* File Input Section */}
+                            <label
+                                htmlFor="file"
+                                className="bg-blue-50 w-full h-10 px-2 rounded-lg cursor-pointer flex items-center justify-between text-black border-none"
+                            >
+                                <svg
+                                    fill="#000000"
+                                    viewBox="0 0 32 32"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-6 fill-blue-500 bg-gray-200 rounded-full p-0.5 shadow-md cursor-pointer"
+                                >
+                                    <path d="M15.331 6H8.5v20h15V14.154h-8.169z"></path>
+                                    <path d="M18.153 6h-.009v5.342H23.5v-.002z"></path>
+                                </svg>
+                                <p className="flex-1 text-center">
+                                    {file ? file.name : "No file selected"}
+                                </p>
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-6"
+                                >
+                                    <path
+                                        d="M5.16565 10.1534C5.07629 8.99181 5.99473 8 7.15975 8H16.8402C18.0053 8 18.9237 8.9918 18.8344 10.1534L18.142 19.1534C18.0619 20.1954 17.193 21 16.1479 21H7.85206C6.80699 21 5.93811 20.1954 5.85795 19.1534L5.16565 10.1534Z"
+                                        stroke="#000000"
+                                        strokeWidth="2"
+                                    ></path>
+                                    <path
+                                        d="M19.5 5H4.5"
+                                        stroke="#000000"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                    ></path>
+                                    <path
+                                        d="M10 3C10 2.44772 10.4477 2 11 2H13C13.5523 2 14 2.44772 14 3V5H10V3Z"
+                                        stroke="#000000"
+                                        strokeWidth="2"
+                                    ></path>
+                                </svg>
+                            </label>
 
+                            <input
+                                id="file"
+                                type="file"
+                                className="hidden"
+                                onChange={handleFileChange}
+                            />
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="mt-4 flex justify-around items-center">
+                            <button
+                                disabled={uploadProfileImageLoader}
+                                onClick={handleUpload}
+                                className={`${file ? '' : 'opacity-50 disabled:cursor-not-allowed'} ${uploadProfileImageLoader ? 'opacity-50 disabled:cursor-not-allowed' : ''} md:px-6 md:py-3 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:shadow-xl transition-transform transform`}
+                            >
+                                Upload
+                            </button>
+                            <button
+                                disabled={uploadProfileImageLoader}
+                                onClick={() => {
+                                    setUploadModal(false)
+                                    setFile(null)
+                                    setPreview(null)
+                                }}
+                                className={`${uploadProfileImageLoader ? 'opacity-50 disabled:cursor-not-allowed' : ''} md:px-6 md:py-3 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600`}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            }
 
             <div className="min-h-screen bg-gradient-to-r from-indigo-600 to-blue-500 text-white">
                 {/* Navbar */}
                 <nav className="flex justify-between items-center py-4 px-6 md:px-12 bg-opacity-80">
                     <motion.div
-                        className="text-2xl font-bold"
+                        className="md:text-2xl text-xl font-bold  flex items-center justify-center gap-2"
                         initial={{ x: -100, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ duration: 0.8 }}
                     >
+                        <button
+                            onClick={() => setUploadModal(true)}
+                            className="cursor-pointer"
+                        >
+                            {
+                                userProfileDetail.profileImage ? (
+                                    <img
+                                        src={userProfileDetail.profileImage} // URL or base64 string of the profile image
+                                        alt="Profile"
+                                        className="rounded-full w-12 h-12 aspect-square object-cover"
+                                    />
+                                ) : (
+                                    <ProfileImageIcon />
+                                )
+                            }
+                        </button>
                         AI-ChatConnect
                     </motion.div>
                     <motion.div
@@ -204,16 +433,14 @@ const Home = () => {
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ duration: 0.8, delay: 0.3 }}
                     >
-                        <a href="#about" className="hover:text-yellow-400">
-                            About
-                        </a>
-                        <a href="#features" className="hover:text-yellow-400">
-                            Features
-                        </a>
-                        <a href="#contact" className="hover:text-yellow-400">
-                            Contact
-                        </a>
+                        <button
+                            onClick={handleTutorialScroll}
+                            className="hover:text-yellow-400">
+                            Tutorial
+                        </button>
+
                     </motion.div>
+
                     <motion.button
                         className="bg-yellow-400 text-black px-4 py-2 rounded-lg hover:bg-yellow-500"
                         initial={{ scale: 0.8, opacity: 0 }}
@@ -375,9 +602,9 @@ const Home = () => {
                                 whileInView={{ y: 0, opacity: 1 }}
                                 transition={{ duration: 0.8, delay: 0.1 }}
                             >
-                                <h3 className="text-xl font-bold mb-3">Instant Messaging</h3>
+                                <h3 className="text-xl font-bold mb-3">Real-Time Collaboration</h3>
                                 <p>
-                                    Enjoy real-time messaging with zero delays. Your conversations are always a step ahead.
+                                    Collaborate with others in virtual rooms, sharing ideas, messages, and code instantly in a seamless environment.
                                 </p>
                             </motion.div>
 
@@ -387,9 +614,9 @@ const Home = () => {
                                 whileInView={{ y: 0, opacity: 1 }}
                                 transition={{ duration: 0.8, delay: 0.3 }}
                             >
-                                <h3 className="text-xl font-bold mb-3">Custom Emojis</h3>
+                                <h3 className="text-xl font-bold mb-3">AI-Powered Assistance</h3>
                                 <p>
-                                    Express yourself better with custom emojis designed to make your chats more fun.
+                                    Get real-time help from Gemini AI, whether it's answering questions, assisting with coding tasks, or automating workflows.
                                 </p>
                             </motion.div>
 
@@ -399,14 +626,55 @@ const Home = () => {
                                 whileInView={{ y: 0, opacity: 1 }}
                                 transition={{ duration: 0.8, delay: 0.5 }}
                             >
-                                <h3 className="text-xl font-bold mb-3">Secure Conversations</h3>
+                                <h3 className="text-xl font-bold mb-3">Multi-Language Code Editor</h3>
                                 <p>
-                                    Your data is safe with us. Experience end-to-end encrypted chats for total peace of mind.
+                                    Work in multiple languages (Python and JavaScript) with a fully-featured Monaco code editor, complete with live execution and theme customization.
+                                </p>
+                            </motion.div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
+                            <motion.div
+                                className="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-6 rounded-lg shadow-lg"
+                                initial={{ y: 50, opacity: 0 }}
+                                whileInView={{ y: 0, opacity: 1 }}
+                                transition={{ duration: 0.8, delay: 0.7 }}
+                            >
+                                <h3 className="text-xl font-bold mb-3">Seamless Room Management</h3>
+                                <p>
+                                    Easily create, load, and join rooms with dynamic user management, so you can interact with members and manage your collaborative space effortlessly.
+                                </p>
+                            </motion.div>
+
+                            <motion.div
+                                className="bg-gradient-to-r from-indigo-400 to-blue-500 text-white p-6 rounded-lg shadow-lg"
+                                initial={{ y: 50, opacity: 0 }}
+                                whileInView={{ y: 0, opacity: 1 }}
+                                transition={{ duration: 0.8, delay: 0.9 }}
+                            >
+                                <h3 className="text-xl font-bold mb-3">Encrypted Communication</h3>
+                                <p>
+                                    Rest assured knowing your messages and data are fully encrypted, providing a secure communication environment for you and your team.
+                                </p>
+                            </motion.div>
+
+                            <motion.div
+                                className="bg-gradient-to-r from-teal-500 to-cyan-600 text-white p-6 rounded-lg shadow-lg"
+                                initial={{ y: 50, opacity: 0 }}
+                                whileInView={{ y: 0, opacity: 1 }}
+                                transition={{ duration: 0.8, delay: 1.1 }}
+                            >
+                                <h3 className="text-xl font-bold mb-3">Customizable UI</h3>
+                                <p>
+                                    Tailor your experience by customizing the Monaco code editor's theme and other UI elements to suit your preferences.
                                 </p>
                             </motion.div>
                         </div>
                     </div>
+
                 </section>
+
+                <TutorialPage />
 
                 {/* About Section */}
                 <section id="about" className="py-16 bg-gradient-to-r from-indigo-600 to-blue-500 text-white">

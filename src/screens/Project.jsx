@@ -9,6 +9,7 @@ import CopyIcon from '../assets/CopyIcon.jsx';
 import CustomIcon from '../assets/CustomIcon.jsx';
 import GroupIcon from '../assets/GroupIcon';
 import ProfileIcon from '../assets/ProfileIcon';
+import ProfileImageIcon from '../assets/ProfileImageIcon.jsx';
 import SendMessageIcon from '../assets/SendMessageIcon';
 import UserIconWithAdd from '../assets/UserIconWithAdd';
 import UserRemoveIcon from "../assets/UserRemoveIcon.jsx";
@@ -16,8 +17,10 @@ import axios from '../config/axios.js';
 import { disconnectSocket, initializeSocket, reciveMessage, sendMessage } from '../config/socket.js';
 import UserContext from '../context/userContext.jsx';
 import ChatSkeleton from "../loaders/ChatSkeleton.jsx";
+import SlideBar from '../loaders/SlideBar.jsx';
 import MarkdownRenderer from './MarkdownRenderer.jsx';
-
+import incomingAudio from './audiosound/incoming.mp3';
+import outgoingAudio from './audiosound/outgoing.mp3';
 
 const Project = () => {
 
@@ -46,6 +49,42 @@ const Project = () => {
     const [chatHistoryLoading, setChatHistoryLoading] = useState(false);
     const [activeUserId, setActiveUserId] = useState(null);
     const ProjectUser = JSON.parse(localStorage.getItem('user'))
+    const [file, setFile] = useState(null);
+    const [preview, setPreview] = useState("");
+    const [uploadStatus, setUploadStatus] = useState("");
+    const [uploadModal, setUploadModal] = useState(false)
+    const [uploadProfileImageLoader, setUploadProfileImageLoader] = useState(false)
+    const [userProfileDetail, setUserProfileDetail] = useState('')
+
+    const playIncomingAudio = () => {
+        try {
+            const audio = new Audio(incomingAudio);
+            audio.play().catch((error) => {
+                console.error('Error playing audio:', error);
+            });
+        } catch (error) {
+            console.error('Error loading audio file:', error);
+        }
+    };
+
+    const playOutgoingAudio = () => {
+        try {
+            const audio = new Audio(outgoingAudio);
+            audio.play().catch((error) => {
+                console.error('Error playing audio:', error);
+            });
+        } catch (error) {
+            console.error('Error loading audio file:', error);
+        }
+    };
+
+    const handleSendMessageSound = () => {
+        playOutgoingAudio();
+    };
+
+    const handleReceiveMessageSound = () => {
+        playIncomingAudio();
+    };
 
     const handleRemoveClick = (userId) => {
         if (activeUserId === userId) {
@@ -202,7 +241,7 @@ const Project = () => {
             sender: user
         });
         appendOutgoingMessage({ message, sender: user });
-        toast.success('Message Sent');
+        handleSendMessageSound()
         setMessage('');
         fullScreenScroll()
     };
@@ -223,7 +262,7 @@ const Project = () => {
                 isOutgoing: false,
             },
         ]);
-
+        handleReceiveMessageSound();
         scrollToBottom();
     };
 
@@ -331,6 +370,78 @@ const Project = () => {
         });
     }
 
+    const handleFileChange = (e) => {
+        const selectedFile = e.target.files && e.target.files[0]; // Ensure a file is selected
+
+        if (selectedFile) {
+            setFile(selectedFile);
+
+            // Generate a preview of the selected image
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreview(reader.result);
+            };
+            reader.readAsDataURL(selectedFile);
+        } else {
+            console.error("No file selected");
+        }
+    };
+
+    const handleUpload = async (e) => {
+        e.preventDefault();
+        setUploadProfileImageLoader(true)
+        if (!file) {
+            setUploadStatus("Please select a file to upload.");
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append("profileImage", file);
+
+        try {
+            const response = await axios.post('/profile/upload-profile-image',
+                formData,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                        Authorization: `${localStorage.getItem('token')}`,
+                    },
+                }
+            );
+
+            setUploadStatus("Image uploaded successfully!");
+            setUploadModal(false)
+            getAllUsers();
+            setUploadProfileImageLoader(false)
+            getProjectById()
+            toast.success('Image Uploaded Successfully')
+            getUserProfile()
+        } catch (error) {
+            console.error("Error uploading image:", error);
+            setUploadStatus("Error uploading image. Please try again.");
+            setUploadModal(false)
+            setUploadProfileImageLoader(false)
+            getProjectById()
+            toast.error('Something went Wrong')
+        }
+    };
+
+    const getUserProfile = async () => {
+        axios.get('/users/profile', {
+            headers: {
+                Authorization: `${localStorage.getItem('token')}`
+            }
+        }).then((res) => {
+            setUserProfileDetail(res.data.user)
+        }).catch((err) => {
+            console.log(err)
+        })
+    }
+
+    useEffect(() => {
+        getUserProfile()
+    }, [])
+
     return (
         <>
             <main className="h-screen flex flex-wrap">
@@ -338,15 +449,36 @@ const Project = () => {
                 <section className="left h-full w-full lg:w-[480px] bg-gradient-to-b from-blue-500 via-blue-600 to-blue-700 flex flex-col ">
                     {/* Header */}
                     <header className="flex justify-between items-center p-2 px-4 w-full bg-blue-800 shadow-md">
-                        <motion.button
-                            initial={{ x: -100, opacity: 0 }}
-                            animate={{ x: 0, opacity: 1 }}
-                            transition={{ duration: 0.6, ease: "easeInOut" }}
-                            onClick={() => setIsModalOpen(true)}
-                            className="p-3 rounded-full bg-blue-600 hover:bg-blue-700 transition duration-300"
-                        >
-                            <UserIconWithAdd />
-                        </motion.button>
+                        <div className="flex justify-center items-center gap-3">
+                            <motion.button
+                                initial={{ x: -100, opacity: 0 }}
+                                animate={{ x: 0, opacity: 1 }}
+                                transition={{ duration: 0.6, ease: "easeInOut" }}
+                                onClick={() => setIsModalOpen(true)}
+                                className="w-[50px] h-[50px] flex justify-center items-center rounded-full bg-blue-600 hover:bg-blue-700 transition duration-300"
+                            >
+                                <UserIconWithAdd />
+                            </motion.button>
+                            <motion.button
+                                initial={{ y: -100, opacity: 0 }}
+                                animate={{ y: 0, opacity: 1 }}
+                                transition={{ duration: 0.6, ease: "easeInOut" }}
+                                onClick={() => setUploadModal(true)}
+                                className="w-[50px] h-[50px] flex justify-center items-center rounded-full bg-blue-600 hover:bg-blue-700 transition duration-300"
+                            >
+                                {
+                                    userProfileDetail.profileImage ? (
+                                        <img
+                                            src={userProfileDetail.profileImage} // URL or base64 string of the profile image
+                                            alt="Profile"
+                                            className="rounded-full w-12 h-12 aspect-square object-cover"
+                                        />
+                                    ) : (
+                                        <ProfileImageIcon />
+                                    )
+                                }
+                            </motion.button>
+                        </div>
                         <motion.h1
                             initial={{ x: -100, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
@@ -361,7 +493,7 @@ const Project = () => {
                             animate={{ x: 0, opacity: 1 }}
                             transition={{ duration: 0.6, ease: "easeInOut" }}
                             onClick={() => setIsSidePanelOpen(!isSidePanelOpen)}
-                            className="p-3 rounded-full bg-blue-600 hover:bg-blue-700 transition duration-300"
+                            className="w-[50px] h-[50px] flex justify-center items-center rounded-full bg-blue-600 hover:bg-blue-700 transition duration-300"
                         >
                             <GroupIcon className="text-white" />
                         </motion.button>
@@ -437,7 +569,7 @@ const Project = () => {
                     <div className={`sidepanel w-full lg:w-[480px] h-full bg-blue-500 absolute lg:-left-[480px] -left-full top-0 transform ${isSidePanelOpen ? 'lg:translate-x-[480px] translate-x-full opacity-100' : 'opacity-70'} transition-transform duration-300`}>
                         <header className="flex justify-between items-center p-2 px-4 w-full bg-blue-800 shadow-md">
                             <h1 className='text-white text-xl font-bold'>Collaborators Members</h1>
-                            <button onClick={() => setIsSidePanelOpen(!isSidePanelOpen)} className="p-3 rounded-full bg-blue-600 hover:bg-blue-700 transition duration-300">
+                            <button onClick={() => setIsSidePanelOpen(!isSidePanelOpen)} className="w-[50px] h-[50px] flex justify-center items-center rounded-full bg-blue-600 hover:bg-blue-700 transition duration-300">
                                 <ArrowIcon className="text-white" />
                             </button>
                         </header>
@@ -449,13 +581,21 @@ const Project = () => {
                                 project.users.map((user, index) => (
                                     <motion.div
                                         key={index}
-                                        className="user relative flex items-center justify-between gap-4 bg-blue-800 rounded-lg px-4 py-2 shadow-md hover:shadow-lg hover:bg-blue-900 transition-all duration-300 cursor-pointer"
+                                        className="user relative flex items-center justify-between gap-4 bg-blue-800 rounded-lg px-2 py-2 shadow-md hover:shadow-lg hover:bg-blue-900 transition-all duration-300 cursor-pointer"
                                     >
                                         <div className="flex items-center justify-center gap-4">
                                             <div
-                                                className={`aspect-square p-3 flex justify-center items-center rounded-full w-fit h-fit bg-blue-800`}
+                                                className={`aspect-square flex justify-center items-center rounded-md w-fit h-fit bg-blue-800`}
                                             >
-                                                <ProfileIcon />
+                                                {user.profileImage ? (
+                                                    <img
+                                                        src={user.profileImage} // URL or base64 string of the profile image
+                                                        alt="Profile"
+                                                        className="rounded-md w-12 h-12 aspect-square object-cover"
+                                                    />
+                                                ) : (
+                                                    <ProfileIcon />
+                                                )}
                                             </div>
                                             <h1 className="text-white font-semibold text-lg">{user.name}</h1>
                                         </div>
@@ -467,7 +607,7 @@ const Project = () => {
                                             ) : (project.admin === ProjectUser._id ? (
                                                 <button
                                                     onClick={() => handleRemoveClick(user._id)}
-                                                    className="p-3 rounded-full bg-blue-600 hover:bg-blue-700 transition duration-300"
+                                                    className="w-[50px] h-[50px] flex justify-center items-center rounded-full bg-blue-600 hover:bg-blue-700 transition duration-300"
                                                 >
                                                     <UserRemoveIcon />
                                                 </button>
@@ -480,13 +620,18 @@ const Project = () => {
 
                                         {/* Conditional Popup for Delete Confirmation */}
                                         {activeUserId === user._id && (
-                                            <div className="absolute top-full mt-2 right-0 bg-gradient-to-r from-blue-600 to-blue-700 p-4 rounded-lg shadow-xl w-56 text-center z-10">
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 0 }}
+                                                transition={{ duration: 0.5, ease: 'easeOut' }}
+                                                className="absolute top-full mt-2 right-0 bg-gradient-to-r from-blue-600 to-blue-700 px-4 py-6 rounded-lg shadow-xl w-64 text-center z-10">
                                                 <p className="text-white text-sm mb-4 font-medium">
                                                     Are you sure you want to remove <span className="font-semibold">{user.name}</span>?
                                                 </p>
                                                 <div className="flex justify-center gap-3">
                                                     <button
-                                                        className="bg-red-600 text-white text-sm px-4 py-2 rounded-md shadow hover:bg-red-500 hover:shadow-lg transition-all duration-300 ease-in-out"
+                                                        className="bg-red-600 text-white text-sm px-5 py-3 rounded-md shadow hover:bg-red-700 hover:shadow-lg hover:scale-110 transition-all duration-300 ease-in-out"
                                                         onClick={() => {
                                                             deleteUserFromProject(user._id, user.name);
                                                             setActiveUserId(null); // Close popup after deletion
@@ -495,13 +640,13 @@ const Project = () => {
                                                         Remove
                                                     </button>
                                                     <button
-                                                        className="bg-gray-200 text-gray-800 text-sm px-4 py-2 rounded-md shadow hover:bg-gray-300 hover:shadow-lg transition-all duration-300 ease-in-out"
+                                                        className="bg-white text-gray-800 text-sm px-5 py-3 rounded-md shadow hover:bg-gray-300 hover:shadow-lg hover:scale-110 transition-all duration-300 ease-in-out"
                                                         onClick={() => setActiveUserId(null)}
                                                     >
                                                         Cancel
                                                     </button>
                                                 </div>
-                                            </div>
+                                            </motion.div>
                                         )}
 
                                     </motion.div>
@@ -632,6 +777,139 @@ const Project = () => {
 
             </main >
 
+
+            {uploadModal &&
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.7 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, y: 20 }}
+                        transition={{ duration: 0.5, ease: "easeInOut" }}
+                        className="absolute overflow-hidden bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
+                        {/* Modal Header */}
+                        {uploadProfileImageLoader && <SlideBar />}
+                        <div className="flex justify-between items-center mb-4">
+                            <h2 className="text-xl font-semibold text-gray-800">
+                                Upload a File
+                            </h2>
+                            <button
+                                className="text-gray-600 hover:text-gray-900"
+                                onClick={() => setUploadModal(false)}
+                            >
+                                ✕
+                            </button>
+                        </div>
+
+                        {/* Upload Component */}
+                        <div className="h-auto w-full rounded-lg shadow-lg flex flex-col items-center justify-between p-4 gap-4 bg-blue-100">
+                            {/* Preview Section */}
+                            {preview ? (
+                                <div className="flex-1 w-full rounded-lg overflow-hidden border-2 border-blue-500">
+                                    <img
+                                        src={preview}
+                                        alt="Selected File"
+                                        className="w-full h-48 object-cover"
+                                    />
+                                </div>
+                            ) : (
+                                <div className="flex-1 w-full border-2 border-dashed border-blue-500 rounded-lg flex flex-col items-center justify-center">
+                                    <svg
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-24"
+                                    >
+                                        <path
+                                            d="M7 10V9C7 6.23858 9.23858 4 12 4C14.7614 4 17 6.23858 17 9V10C19.2091 10 21 11.7909 21 14C21 15.4806 20.1956 16.8084 19 17.5M7 10C4.79086 10 3 11.7909 3 14C3 15.4806 3.8044 16.8084 5 17.5M7 10C7.43285 10 7.84965 10.0688 8.24006 10.1959M12 12V21M12 12L15 15M12 12L9 15"
+                                            stroke="#000000"
+                                            strokeWidth="1.5"
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                        ></path>
+                                    </svg>
+                                    <p className="text-center text-black">
+                                        Browse file to upload!
+                                    </p>
+                                </div>
+                            )}
+
+                            {/* File Input Section */}
+                            <label
+                                htmlFor="file"
+                                className="bg-blue-50 w-full h-10 px-2 rounded-lg cursor-pointer flex items-center justify-between text-black border-none"
+                            >
+                                <svg
+                                    fill="#000000"
+                                    viewBox="0 0 32 32"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-6 fill-blue-500 bg-gray-200 rounded-full p-0.5 shadow-md cursor-pointer"
+                                >
+                                    <path d="M15.331 6H8.5v20h15V14.154h-8.169z"></path>
+                                    <path d="M18.153 6h-.009v5.342H23.5v-.002z"></path>
+                                </svg>
+                                <p className="flex-1 text-center">
+                                    {file ? file.name : "No file selected"}
+                                </p>
+                                <svg
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-6"
+                                >
+                                    <path
+                                        d="M5.16565 10.1534C5.07629 8.99181 5.99473 8 7.15975 8H16.8402C18.0053 8 18.9237 8.9918 18.8344 10.1534L18.142 19.1534C18.0619 20.1954 17.193 21 16.1479 21H7.85206C6.80699 21 5.93811 20.1954 5.85795 19.1534L5.16565 10.1534Z"
+                                        stroke="#000000"
+                                        strokeWidth="2"
+                                    ></path>
+                                    <path
+                                        d="M19.5 5H4.5"
+                                        stroke="#000000"
+                                        strokeWidth="2"
+                                        strokeLinecap="round"
+                                    ></path>
+                                    <path
+                                        d="M10 3C10 2.44772 10.4477 2 11 2H13C13.5523 2 14 2.44772 14 3V5H10V3Z"
+                                        stroke="#000000"
+                                        strokeWidth="2"
+                                    ></path>
+                                </svg>
+                            </label>
+
+                            <input
+                                id="file"
+                                type="file"
+                                className="hidden"
+                                onChange={handleFileChange}
+                            />
+                        </div>
+
+                        {/* Modal Footer */}
+                        <div className="mt-4 flex justify-around items-center">
+                            <button
+                                disabled={uploadProfileImageLoader}
+                                onClick={handleUpload}
+                                className={`${file ? '' : 'opacity-50 disabled:cursor-not-allowed'} ${uploadProfileImageLoader ? 'opacity-50 disabled:cursor-not-allowed' : ''} md:px-6 md:py-3 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:shadow-xl transition-transform transform`}
+                            >
+                                Upload
+                            </button>
+                            <button
+                                disabled={uploadProfileImageLoader}
+                                onClick={() => {
+                                    setUploadModal(false)
+                                    setFile(null)
+                                    setPreview(null)
+                                }}
+                                className={`${uploadProfileImageLoader ? 'opacity-50 disabled:cursor-not-allowed' : ''} md:px-6 md:py-3 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600`}
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>
+            }
+
+
+
             {
                 isModalOpen && (
                     <div className="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center z-50">
@@ -679,9 +957,17 @@ const Project = () => {
                                         >
                                             <div className="flex items-center space-x-4">
                                                 <div
-                                                    className={`aspect-square p-3 flex justify-center items-center rounded-full w-fit h-fit bg-blue-600`}
+                                                    className={`aspect-square flex justify-center items-center rounded-full w-fit h-fit bg-blue-600`}
                                                 >
-                                                    <ProfileIcon />
+                                                    {user.profileImage ? (
+                                                        <img
+                                                            src={user.profileImage} // URL or base64 string of the profile image
+                                                            alt="Profile"
+                                                            className="rounded-full w-12 h-12 aspect-square object-cover"
+                                                        />
+                                                    ) : (
+                                                        <ProfileIcon />
+                                                    )}
                                                 </div>
                                                 <span className="text-gray-800 font-semibold md:text-lg text-base">
                                                     {user.name}
