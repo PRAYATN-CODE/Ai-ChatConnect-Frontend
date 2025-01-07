@@ -521,9 +521,9 @@ const Project = () => {
                                             <div className={`p-2 text-gray-600 ${msg.isOutgoing ? 'text-right' : 'text-left'}`}>
                                                 {msg.senderName}
                                             </div>
-                                            <div className={`p-2 rounded-lg ${msg.isOutgoing ? 'bg-blue-600 text-white' : 'bg-blue-200 text-black'} sm:max-w-[22rem] max-w-64 text-lg`}>
+                                            <div className={` p-2 rounded-lg ${msg.isOutgoing ? 'bg-blue-600 text-white' : 'bg-blue-200 text-black'} sm:max-w-[22rem] max-w-64 text-lg`}>
                                                 {msg.senderName === 'J.A.R.V.I.S' ? (
-                                                    <div className="relative px-[0.5em] overflow-x-scroll rounded-md scrollbar-none">
+                                                    <div className=" px-[0.5em] overflow-x-scroll rounded-md scrollbar-none">
                                                         <MarkdownRenderer content={msg.text} />
                                                         {msg.senderName === "J.A.R.V.I.S" && (
                                                             <button onClick={() => { copyToClipboard(msg.text) }} className="mt-4 mb-3 flex justify-center items-center space-x-1 px-3 py-1 bg-gray-900/75 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-gray-800">
@@ -958,8 +958,8 @@ const Project = () => {
                                         <motion.li
                                             key={user._id}
                                             className={`md:p-4 p-1 rounded-lg flex items-center justify-between cursor-pointer transition-all transform hover:shadow-lg ${selectedUserId === user._id
-                                                    ? "bg-blue-300 border border-blue-800"
-                                                    : "bg-blue-50"
+                                                ? "bg-blue-300 border border-blue-800"
+                                                : "bg-blue-50"
                                                 }`}
                                             onClick={() => setSelectedUserId(user._id)}
                                             initial={{ opacity: 0, scale: 0.8 }}

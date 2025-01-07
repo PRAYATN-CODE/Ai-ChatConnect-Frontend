@@ -574,6 +574,7 @@ const Home = () => {
                                                                 <p className="text-white flex items-center space-x-2 mt-3">
                                                                     <UserIcon />
                                                                     <span>{project.users.length}</span>
+                                                                    {/* <span>{project.users}</span> */}
                                                                 </p>
                                                                 <div className="flex items-end justify-start gap-3 pt-4">
                                                                     <button
@@ -604,7 +605,7 @@ const Home = () => {
                                                     projectLoading ? (
                                                         <ProjectSkeleton />
                                                     ) : (
-                                                        <div className="p-6 text-yellow-700 text-center sm:w-[24rem] w-full">
+                                                        <div className="p-6 text-yellow-700 text-center text-wrap w-full">
                                                             <p className="text-lg font-semibold">
                                                                 No Rooms available. Please create a new Room.
                                                             </p>
@@ -638,6 +639,7 @@ const Home = () => {
                                                                 <p className="text-white flex items-center space-x-2 mt-3">
                                                                     <UserIcon />
                                                                     <span>{project.users.length}</span>
+
                                                                 </p>
                                                                 <div className="flex items-end justify-start gap-3 pt-4">
                                                                     <button
@@ -659,7 +661,7 @@ const Home = () => {
                                                     projectLoading ? (
                                                         <ProjectSkeleton />
                                                     ) : (
-                                                        <div className="p-6 text-yellow-700 text-center sm:w-[24rem] w-full">
+                                                        <div className="p-6 text-yellow-700 text-center  text-wrap w-full">
                                                             <p className="text-lg font-semibold">
                                                                 No Room available. Please wait for other users to contribute one.
                                                             </p>

@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GitHubIcon from '../assets/GitHubIcon';
 import LinkedInIcon from '../assets/LinkedInIcon';
@@ -8,6 +8,13 @@ import TwitterIcon from '../assets/TwitterIcon';
 const AboutPage = () => {
 
     const navigate = useNavigate();
+
+    useEffect(() => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    })
 
     return (
         <div className="min-h-screen bg-white text-blue-700">
@@ -110,13 +117,8 @@ const AboutPage = () => {
                         <div>
                             <h3 className="text-2xl sm:text-3xl font-semibold text-blue-700">Prayatn Soni</h3>
                             <p className="mt-4 text-base sm:text-lg md:text-xl leading-relaxed text-gray-800">
-                                AI-ChatConnect is crafted by a passionate full-stack developer with expertise in cutting-edge technologies like React.js, Express.js, MongoDB, and Tailwind CSS. This developer has a strong commitment to innovation, scalability, and user-centric design, ensuring that every project exceeds expectations.
+                                AI-ChatConnect is crafted by a passionate full-stack developer with expertise in cutting-edge technologies like MongoDB, Express.js, React.js, Node.js, and Tailwind CSS. This developer has a strong commitment to innovation, scalability, and user-centric design, ensuring that every project exceeds expectations.
                             </p>
-                            <p className="mt-4 text-base sm:text-lg md:text-xl leading-relaxed text-gray-800">
-                                Prayatn's mission is to create solutions that empower users, streamline workflows, and foster creativity. With a deep understanding of modern development practices, they aim to bridge the gap between functionality and aesthetics.
-                            </p>
-
-
                         </div>
                     </motion.div>
                 </section>
@@ -164,7 +166,7 @@ const AboutPage = () => {
                         </a>
                         <div className="text-gray-800 text-sm sm:text-base">
                             <p className="font-semibold">LinkedIn</p>
-                            <p>Connect with me on LinkedIn for professional updates and networking.</p>
+                            <p>Connect with me on LinkedIn for professional updates.</p>
                         </div>
                     </div>
 
