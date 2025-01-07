@@ -5,8 +5,8 @@ const ProfileIcon = () => {
         <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
-            width="48"
-            height="48"
+            width="56"
+            height="56"
             fill="none"
         >
             <path

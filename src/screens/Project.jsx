@@ -25,6 +25,7 @@ import outgoingAudio from './audiosound/outgoing.mp3';
 const Project = () => {
 
     const location = useLocation();
+    const navigate = useNavigate();
     const [isSidePanelOpen, setIsSidePanelOpen] = useState(false)
     const [selectedUserId, setSelectedUserId] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false)
@@ -33,14 +34,10 @@ const Project = () => {
     const [message, setMessage] = useState("")
     const [messages, setMessages] = useState([]);
     const [copied, setCopied] = useState(false);
-    const [fileTree, setFileTree] = useState({});
-    const [currentFile, setCurrentFile] = useState(null)
-    const [openFiles, setOpenFiles] = useState([])
     const [searchTerm, setSearchTerm] = useState("");
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
     const { user, setUser } = useContext(UserContext);
     const messageBox = React.createRef()
-    const navigate = useNavigate();
     const [code, setCode] = useState("// Start coding here...\n");
     const [language, setLanguage] = useState("javascript");
     const [theme, setTheme] = useState("vs-dark");
@@ -57,8 +54,6 @@ const Project = () => {
     const [userProfileDetail, setUserProfileDetail] = useState('')
     const [deleteUserLoader, setDeleteUserLoader] = useState(false)
     const [addUserLoader, setAddUserLoader] = useState(false)
-
-
 
     const playIncomingAudio = () => {
         try {
@@ -163,6 +158,7 @@ const Project = () => {
             setProject(res.data.project)
         }).catch((err) => {
             console.log(err)
+            navigate('/home')
         })
     }
 
@@ -419,12 +415,12 @@ const Project = () => {
                 }
             );
 
-            setUploadStatus("Image uploaded successfully!");
+            setUploadStatus("Image uploaded");
             setUploadModal(false)
             getAllUsers();
             setUploadProfileImageLoader(false)
             getProjectById()
-            toast.success('Image Uploaded Successfully')
+            toast.success("Image uploaded")
             getUserProfile()
         } catch (error) {
             console.error("Error uploading image:", error);
@@ -460,7 +456,7 @@ const Project = () => {
                     {/* Header */}
                     <header className="flex justify-between items-center p-2 px-4 w-full bg-blue-800 shadow-md">
                         <div className="flex justify-center items-center gap-3">
-                            <motion.button
+                            {project.admin === ProjectUser._id && <motion.button
                                 initial={{ x: -100, opacity: 0 }}
                                 animate={{ x: 0, opacity: 1 }}
                                 transition={{ duration: 0.6, ease: "easeInOut" }}
@@ -468,13 +464,13 @@ const Project = () => {
                                 className="w-[50px] h-[50px] flex justify-center items-center rounded-full bg-blue-600 hover:bg-blue-700 transition duration-300"
                             >
                                 <UserIconWithAdd />
-                            </motion.button>
+                            </motion.button>}
                             <motion.button
                                 initial={{ y: -100, opacity: 0 }}
                                 animate={{ y: 0, opacity: 1 }}
                                 transition={{ duration: 0.6, ease: "easeInOut" }}
                                 onClick={() => setUploadModal(true)}
-                                className="w-[50px] h-[50px] flex justify-center items-center rounded-full bg-blue-600 hover:bg-blue-700 transition duration-300"
+                                className="w-[50px] h-[50px] flex justify-center items-center rounded-full transition duration-300"
                             >
                                 {
                                     userProfileDetail.profileImage ? (
@@ -585,13 +581,13 @@ const Project = () => {
                         </header>
 
                         {/* Users */}
-                        <div className="users flex flex-col gap-6 p-4 bg-blue-500 rounded-lg w-full">
+                        <div className="users flex flex-col gap-6 p-4 bg-blue-500 rounded-lg w-full h-[90%]  overflow-y-scroll">
                             {project &&
                                 Array.isArray(project.users) &&
                                 project.users.map((user, index) => (
                                     <motion.div
                                         key={index}
-                                        className="user relative flex items-center justify-between gap-4 bg-blue-800 rounded-lg px-2 py-2 shadow-md hover:shadow-lg hover:bg-blue-900 transition-all duration-300 cursor-pointer"
+                                        className="user relative flex items-center justify-between gap-4 bg-blue-800 rounded-lg p-2 shadow-md hover:shadow-lg hover:bg-blue-900 transition-all duration-300 cursor-pointer"
                                     >
                                         <div className="flex items-center justify-center gap-4">
                                             <div
@@ -601,7 +597,7 @@ const Project = () => {
                                                     <img
                                                         src={user.profileImage} // URL or base64 string of the profile image
                                                         alt="Profile"
-                                                        className="rounded-md w-12 h-12 aspect-square object-cover"
+                                                        className="rounded-md w-14 h-14 aspect-square object-cover"
                                                     />
                                                 ) : (
                                                     <ProfileIcon />
@@ -617,7 +613,7 @@ const Project = () => {
                                             ) : (project.admin === ProjectUser._id ? (
                                                 <button
                                                     onClick={() => handleRemoveClick(user._id)}
-                                                    className="w-[50px] h-[50px] flex justify-center items-center rounded-full bg-blue-600 hover:bg-blue-700 transition duration-300"
+                                                    className="w-[50px] h-[50px] flex justify-center items-center rounded-full hover:bg-blue-700 transition duration-300"
                                                 >
                                                     <UserRemoveIcon />
                                                 </button>
@@ -801,7 +797,7 @@ const Project = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, y: 20 }}
                         transition={{ duration: 0.5, ease: "easeInOut" }}
-                        className="absolute overflow-hidden bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
+                        className="absolute overflow-hidden bg-white rounded-lg shadow-lg sm:p-6 p-4 max-w-md w-[90%] mx-4">
                         {/* Modal Header */}
                         {uploadProfileImageLoader && <SlideBar />}
                         <div className="flex justify-between items-center mb-4">
@@ -817,10 +813,10 @@ const Project = () => {
                         </div>
 
                         {/* Upload Component */}
-                        <div className="h-auto w-full rounded-lg shadow-lg flex flex-col items-center justify-between p-4 gap-4 bg-blue-100">
+                        <div className="h-auto w-full rounded-lg shadow-lg flex flex-col items-center justify-between p-5 gap-4 bg-blue-100">
                             {/* Preview Section */}
                             {preview ? (
-                                <div className="flex-1 w-full rounded-lg overflow-hidden border-2 border-blue-500">
+                                <div className="flex-1 w-full rounded-lg object-cover overflow-hidden border-2 border-blue-500">
                                     <img
                                         src={preview}
                                         alt="Selected File"
@@ -863,7 +859,7 @@ const Project = () => {
                                     <path d="M15.331 6H8.5v20h15V14.154h-8.169z"></path>
                                     <path d="M18.153 6h-.009v5.342H23.5v-.002z"></path>
                                 </svg>
-                                <p className="flex-1 text-center">
+                                <p className="flex-1 text-center overflow-hidden md:text-xl text-sm">
                                     {file ? file.name : "No file selected"}
                                 </p>
                                 <svg
@@ -931,7 +927,7 @@ const Project = () => {
                             initial={{ opacity: 0, scale: 0.7 }}
                             animate={{ opacity: 1, scale: 1 }}
                             transition={{ duration: 0.3, ease: "easeInOut" }}
-                            className={`${addUserLoader ? 'pointer-events-none opacity-80 bg-gray-100' : '' } overflow-x-hidden bg-white w-full max-w-md rounded-2xl shadow-2xl md:p-8 p-4 md:max-w-lg relative mx-4`}>
+                            className={`${addUserLoader ? 'pointer-events-none opacity-80 bg-gray-100' : ''} overflow-x-hidden bg-white w-full max-w-md rounded-2xl shadow-2xl md:p-8 p-4 md:max-w-lg relative mx-4`}>
                             {addUserLoader && <SlideBar />}
                             <h2 className="md:text-3xl text-2xl font-bold text-blue-700 md:mb-6 mb-4 text-center">
                                 Recruit User
@@ -950,25 +946,26 @@ const Project = () => {
                                     Search User
                                 </label>
                             </div>
-                            <ul className=" p-1 rounded-md space-y-4 md:h-72 h-60 overflow-y-scroll overflow-x-hidden scrollbar-none">
+                            <ul className="p-1 rounded-md space-y-4 md:h-72 h-60 overflow-y-scroll overflow-x-hidden scrollbar-none">
                                 {users
                                     .filter(
                                         (user) =>
                                             !project.users.some((projectUser) => projectUser._id === user._id) &&
                                             user.name.toLowerCase().includes(debouncedSearchTerm.toLowerCase()) // Use debounced term
                                     )
+                                    .sort((a, b) => a.name.localeCompare(b.name)) // Sort users alphabetically by name
                                     .map((user) => (
                                         <motion.li
                                             key={user._id}
                                             className={`md:p-4 p-1 rounded-lg flex items-center justify-between cursor-pointer transition-all transform hover:shadow-lg ${selectedUserId === user._id
-                                                ? "bg-blue-300 border border-blue-800"
-                                                : "bg-blue-50"
+                                                    ? "bg-blue-300 border border-blue-800"
+                                                    : "bg-blue-50"
                                                 }`}
                                             onClick={() => setSelectedUserId(user._id)}
                                             initial={{ opacity: 0, scale: 0.8 }}
                                             animate={{ opacity: 1, scale: 1 }}
                                             exit={{ opacity: 0, scale: 0.8 }}
-                                            transition={{ duration: 0.5 }}
+                                            transition={{ duration: 0.3 }}
                                         >
                                             <div className="flex items-center space-x-4">
                                                 <div
@@ -978,7 +975,7 @@ const Project = () => {
                                                         <img
                                                             src={user.profileImage} // URL or base64 string of the profile image
                                                             alt="Profile"
-                                                            className="rounded-full w-12 h-12 aspect-square object-cover"
+                                                            className="rounded-full w-14 h-14 aspect-square object-cover"
                                                         />
                                                     ) : (
                                                         <ProfileIcon />
@@ -994,9 +991,9 @@ const Project = () => {
                                                 </span>
                                             )}
                                         </motion.li>
-                                    ))
-                                }
+                                    ))}
                             </ul>
+
                             <div className="md:mt-8 mt-4 flex justify-between items-center">
                                 <button
                                     className={` ${addUserLoader ? 'opacity-70 cursor-not-allowed' : ''} md:px-6 md:py-3 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-semibold rounded-lg shadow-md hover:shadow-xl transition-transform transform`}

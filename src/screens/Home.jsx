@@ -8,9 +8,8 @@ import ProfileImageIcon from "../assets/ProfileImageIcon.jsx";
 import UserIcon from '../assets/UserIcon.jsx';
 import axios from '../config/axios.js';
 import UserContext from '../context/userContext.jsx';
-import ProjectSkeleton from "../loaders/ProjectSkeleton.jsx";
+import ProjectSkeleton from '../loaders/ProjectSkeleton.jsx';
 import SlideBar from "../loaders/SlideBar.jsx";
-import TutorialPage from "./TutorialPage.jsx";
 
 const Home = () => {
 
@@ -167,7 +166,6 @@ const Home = () => {
             );
 
             setUploadStatus("Image uploaded successfully!");
-            console.log(response.data);
             setUploadModal(false)
             setUploadProfileImageLoader(false)
             toast.success('Image Uploaded')
@@ -318,7 +316,7 @@ const Home = () => {
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, y: 20 }}
                         transition={{ duration: 0.5, ease: "easeInOut" }}
-                        className="absolute overflow-hidden bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
+                        className="absolute overflow-hidden bg-white rounded-lg shadow-lg p-6 max-w-md w-[90%] mx-4">
                         {/* Modal Header */}
                         {uploadProfileImageLoader && <SlideBar />}
                         <div className="flex justify-between items-center mb-4">
@@ -517,9 +515,6 @@ const Home = () => {
                                 <span>New Room</span>
                                 <AddIcon width={20} height={20} />
                             </button>
-                            <button className="bg-transparent border border-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition duration-300">
-                                Learn More
-                            </button>
                         </div>
 
                     </motion.div>
@@ -541,7 +536,7 @@ const Home = () => {
 
                 {/* Project Section */}
                 <section id="projects" className="pb-12 pt-8 bg-white text-white">
-                    <div className="max-w-6xl mx-auto p-6 md:p-12 flex flex-col items-center justify-center">
+                    <div className="max-w-7xl mx-auto p-3 md:p-6 flex flex-col items-center justify-center">
                         <motion.h2
                             className="text-3xl md:text-4xl text-black font-bold text-center mb-4"
                             initial={{ opacity: 0 }}
@@ -551,64 +546,134 @@ const Home = () => {
                             All Rooms
                         </motion.h2>
                         {/* Scrollable container */}
-                        <div
-                            className="grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto md:max-h-96 max-h-[30rem] p-6 rounded-xl shadow-lg"
-                        >
-                            {project && project.length > 0 ? (
-                                project.map((project, index) => (
-                                    <motion.div
-
-                                        key={project._id}
-                                        className="min-h-40 h-fit p-6 bg-gradient-to-r from-indigo-600 to-blue-500 rounded-lg shadow-lg"
-                                        initial={{ y: 50, opacity: 0 }}
-                                        whileInView={{ y: 0, opacity: 1 }}
-                                        transition={{ duration: 0.8, delay: 0.1 * index }}
-                                    >
-                                        <h3 className="text-2xl font-bold mb-2">{project.name}</h3>
-                                        <p key={index} className="text-white">
-                                            <span className="font-mono">Click to Start Working with Your Team and AI to Create Something Amazing!</span>
-                                        </p>
-                                        <p className="text-white flex items-center space-x-2 mt-3">
-                                            <UserIcon />
-                                            <span>{project.users.length}</span>
-                                        </p>
-                                        <div className="flex items-end justify-start gap-3 pt-4">
-                                            <button
-                                                onClick={() => {
-                                                    navigate(`/project`, {
-                                                        state: {
-                                                            project,
-                                                        },
-                                                    })
-                                                }}
-                                                className="bg-yellow-400 text-black w-[90px] h-[45px] text-xl font-semibold rounded-lg hover:bg-yellow-500 hover:shadow-lg hover:scale-110 transition duration-500">Join</button>
-                                            {project?.admin === loggedInUser?._id && (
-                                                <button
-                                                    onClick={() => {
-                                                        setDeleteProjectId(project._id);
-                                                        setDeleteModal(true);
-                                                    }}
-                                                    className="bg-transparent border border-white w-[90px] h-[45px] rounded-lg hover:bg-blue-700 hover:shadow-lg hover:scale-110 transition duration-500 flex items-center justify-center"
-                                                >
-                                                    <DeleteIcon />
-                                                </button>
-                                            )}
-
+                        {(
+                            <div className="flex flex-wrap items-center justify-between gap-6 md:p-6 p-3 rounded-xl">
+                                {project && (
+                                    <>
+                                        {/* Your Room Section */}
+                                        <div className="w-full md:w-[48%] flex flex-col gap-4 rounded-lg shadow-xl p-4">
+                                            <h2 className="text-2xl text-center font-bold text-white sticky top-0 bg-gradient-to-r from-indigo-700 to-blue-600 p-2 rounded-lg">
+                                                Your Room
+                                            </h2>
+                                            <div className="flex flex-col gap-4 overflow-y-auto h-[30rem]">
+                                                {project.filter((proj) => proj.admin === userProfileDetail._id).length > 0 ? (
+                                                    project
+                                                        .filter((proj) => proj.admin === userProfileDetail._id)
+                                                        .map((project, index) => (
+                                                            <motion.div
+                                                                key={project._id}
+                                                                className="p-4 bg-gradient-to-r from-indigo-600 to-blue-500 rounded-lg shadow-lg"
+                                                                initial={{ y: 50, opacity: 0 }}
+                                                                whileInView={{ y: 0, opacity: 1 }}
+                                                                transition={{ duration: 0.8, delay: 0.1 * index }}
+                                                            >
+                                                                <h3 className="text-xl font-bold mb-2">{project.name}</h3>
+                                                                <p className="text-white">
+                                                                    <span className="font-mono">Click to Start Working with Your Team and AI to Create Something Amazing!</span>
+                                                                </p>
+                                                                <p className="text-white flex items-center space-x-2 mt-3">
+                                                                    <UserIcon />
+                                                                    <span>{project.users.length}</span>
+                                                                </p>
+                                                                <div className="flex items-end justify-start gap-3 pt-4">
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            navigate(`/project`, {
+                                                                                state: {
+                                                                                    project,
+                                                                                },
+                                                                            });
+                                                                        }}
+                                                                        className="bg-yellow-400 text-black w-[90px] h-[45px] text-sm md:text-base font-semibold rounded-lg hover:bg-yellow-500 hover:shadow-lg hover:scale-110 transition duration-500"
+                                                                    >
+                                                                        Join
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setDeleteProjectId(project._id);
+                                                                            setDeleteModal(true);
+                                                                        }}
+                                                                        className="bg-transparent border border-white w-[90px] h-[45px] rounded-lg hover:bg-blue-700 hover:shadow-lg hover:scale-110 transition duration-500 flex items-center justify-center"
+                                                                    >
+                                                                        <DeleteIcon />
+                                                                    </button>
+                                                                </div>
+                                                            </motion.div>
+                                                        ))
+                                                ) : (
+                                                    projectLoading ? (
+                                                        <ProjectSkeleton />
+                                                    ) : (
+                                                        <div className="p-6 text-yellow-700 text-center sm:w-[24rem] w-full">
+                                                            <p className="text-lg font-semibold">
+                                                                No Rooms available. Please create a new Room.
+                                                            </p>
+                                                        </div>
+                                                    )
+                                                )}
+                                            </div>
                                         </div>
-                                    </motion.div>
-                                ))
-                            ) : (
-                                !projectLoading &&
-                                <div className="p-6 text-yellow-700 text-center sm:w-[24rem] w-[67vw]">
-                                    <p className="text-lg font-semibold">
-                                        No projects available. Please click on <span className="text-blue-500" >Load Room</span> or create a new project, otherwise wait for other users to contribute one.
-                                    </p>
-                                </div>
-                            )}
 
-                            {projectLoading && <ProjectSkeleton />}
+                                        {/* Other Room Section */}
+                                        <div className="w-full md:w-[48%] flex flex-col gap-4 p-4 rounded-lg shadow-xl">
+                                            <h2 className="text-2xl text-center font-bold text-white sticky top-0 bg-gradient-to-r from-indigo-700 to-blue-600 p-2 rounded-lg">
+                                                Other Room
+                                            </h2>
+                                            <div className="flex flex-col gap-4 overflow-y-auto h-[30rem]">
+                                                {project.filter((proj) => proj.admin !== userProfileDetail._id).length > 0 ? (
+                                                    project
+                                                        .filter((proj) => proj.admin !== userProfileDetail._id)
+                                                        .map((project, index) => (
+                                                            <motion.div
+                                                                key={project._id}
+                                                                className="p-4 bg-gradient-to-r from-indigo-600 to-blue-500 rounded-lg shadow-lg"
+                                                                initial={{ y: 50, opacity: 0 }}
+                                                                whileInView={{ y: 0, opacity: 1 }}
+                                                                transition={{ duration: 0.8, delay: 0.1 * index }}
+                                                            >
+                                                                <h3 className="text-xl font-bold mb-2">{project.name}</h3>
+                                                                <p className="text-white">
+                                                                    <span className="font-mono">Click to Start Working with Your Team and AI to Create Something Amazing!</span>
+                                                                </p>
+                                                                <p className="text-white flex items-center space-x-2 mt-3">
+                                                                    <UserIcon />
+                                                                    <span>{project.users.length}</span>
+                                                                </p>
+                                                                <div className="flex items-end justify-start gap-3 pt-4">
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            navigate(`/project`, {
+                                                                                state: {
+                                                                                    project,
+                                                                                },
+                                                                            });
+                                                                        }}
+                                                                        className="bg-yellow-400 text-black w-[90px] h-[45px] text-sm md:text-base font-semibold rounded-lg hover:bg-yellow-500 hover:shadow-lg hover:scale-110 transition duration-500"
+                                                                    >
+                                                                        Join
+                                                                    </button>
+                                                                </div>
+                                                            </motion.div>
+                                                        ))
+                                                ) : (
+                                                    projectLoading ? (
+                                                        <ProjectSkeleton />
+                                                    ) : (
+                                                        <div className="p-6 text-yellow-700 text-center sm:w-[24rem] w-full">
+                                                            <p className="text-lg font-semibold">
+                                                                No Room available. Please wait for other users to contribute one.
+                                                            </p>
+                                                        </div>
+                                                    )
+                                                )}
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
 
-                        </div>
+
                         {!project || (Array.isArray(project) && project.length === 0) || (typeof project === 'object' && Object.keys(project).length === 0) ? (
                             <motion.button
                                 className="bg-gradient-to-r from-indigo-600 to-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-800 mt-6 shadow-xl"
@@ -720,7 +785,137 @@ const Home = () => {
 
                 </section>
 
-                <TutorialPage />
+
+
+
+                <div className="bg-gray-50 min-h-screen p-6">
+                    <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg md:p-10 p-2 py-6 md:py-10">
+                        <motion.h1
+                            className="text-4xl font-bold text-blue-600 text-center mb-10"
+                            initial={{ opacity: 0, y: -50 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 1, ease: "easeOut" }}
+                        >
+                            Welcome to Ai-ChatConnect Tutorial
+                        </motion.h1>
+
+                        <div className="space-y-14 flex justify-center items-center flex-col">
+                            {/* Section 1 */}
+                            <motion.div
+                                className="space-y-4 border-2 border-blue-300 md:p-6 p-4 rounded-lg shadow-md"
+                                initial={{ opacity: 0, x: -50 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 1, ease: "easeOut" }}
+                            >
+                                <h2 className="text-3xl font-semibold text-blue-500 mb-4">Step 1: Sign In</h2>
+                                <p className="text-gray-700 text-lg leading-relaxed">
+                                    Sign in or log in to the website using your email address. After logging in, you’ll be directed to the homepage, where you can begin interacting with other users and explore the features of the platform.
+                                </p>
+                                <div className="mt-6">
+                                    <motion.img
+                                        src="https://i.imgur.com/OFzPp7m.png"
+                                        alt="Sign In"
+                                        className="w-full h-auto rounded-lg shadow-xl mx-auto"
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ duration: 1, ease: "easeOut" }}
+                                    />
+                                </div>
+                            </motion.div>
+
+                            {/* Section 2 */}
+                            <motion.div
+                                className="space-y-4 border-2 border-blue-300 md:p-6 p-4 rounded-lg shadow-md"
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 1, ease: "easeOut" }}
+                            >
+                                <h2 className="text-3xl font-semibold text-blue-500 mb-4">Step 2: Load or Create a Room</h2>
+                                <p className="text-gray-700 text-lg leading-relaxed">
+                                    After logging in, click on the "Load Room" button to load an existing room. If no room exists, you can create a new room by clicking the "New Room" button at the top. Enter the name of the room and click on "Create". Once the room appears, click on "Join" to enter the room.
+                                </p>
+                                <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 justify-items-center">
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ duration: 1, delay: 0.2 }}
+                                    >
+                                        <img
+                                            src="https://iili.io/2g20ICF.jpg"
+                                            alt="Load Room"
+                                            className="w-full md:w-[300px] h-auto rounded-lg shadow-xl"
+                                        />
+                                    </motion.div>
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ duration: 1, delay: 0.4 }}
+                                    >
+                                        <img
+                                            src="https://iili.io/2g2VQ49.md.jpg"
+                                            alt="Create Room"
+                                            className="w-full md:w-[300px] h-auto rounded-lg shadow-xl"
+                                        />
+                                    </motion.div>
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ duration: 1, delay: 0.6 }}
+                                    >
+                                        <img
+                                            src="https://iili.io/2g2jdCl.md.jpg"
+                                            alt="Enter Room"
+                                            className="w-full md:w-[300px] h-auto rounded-lg shadow-xl"
+                                        />
+                                    </motion.div>
+                                    <motion.div
+                                        initial={{ opacity: 0, scale: 0.9 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ duration: 1, delay: 0.8 }}
+                                    >
+                                        <img
+                                            src="https://iili.io/2g2wBKN.md.jpg"
+                                            alt="Join Room"
+                                            className="w-full md:w-[300px] h-auto rounded-lg shadow-xl"
+                                        />
+                                    </motion.div>
+                                </div>
+                            </motion.div>
+                            <button
+                                onClick={() => navigate('/tutorial')}
+                                className="bg-transparent mx-auto border border-blue-600 text-blue-600 px-6 py-3 rounded-lg font-semibold hover:text-indigo-600 transition duration-300">
+                                Learn More
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                 {/* About Section */}
                 <section id="about" className="py-16 flex flex-col items-center justify-center gap-8 bg-gradient-to-r from-indigo-600 to-blue-500 text-white">

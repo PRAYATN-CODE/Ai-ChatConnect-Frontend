@@ -1,8 +1,18 @@
 import { motion } from 'framer-motion';
-import React from 'react';
+import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 
 const TutorialPage = () => {
+
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+    })
 
     return (
         <div className="bg-gray-50 min-h-screen p-6">
@@ -16,7 +26,7 @@ const TutorialPage = () => {
                     Welcome to Ai-ChatConnect Tutorial
                 </motion.h1>
 
-                <div className="space-y-14">
+                <div className="space-y-14 flex flex-col justify-center items-center">
                     {/* Section 1 */}
                     <motion.div
                         className="space-y-4 border-2 border-blue-300 md:p-6 p-4 rounded-lg shadow-md"
@@ -218,6 +228,11 @@ const TutorialPage = () => {
                             </motion.div>
                         </div>
                     </motion.div>
+                    <button
+                        onClick={() => navigate('/home')}
+                        className="bg-transparent mx-auto border border-blue-600 text-blue-600 px-6 py-3 rounded-lg font-semibold hover:text-indigo-600 transition duration-300">
+                        Start Exploring
+                    </button>
                 </div>
             </div>
         </div>
