@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import AddIcon from "../assets/AddIcon.jsx";
 import DeleteIcon from "../assets/DeleteIcon.jsx";
+import LeaveIcon from "../assets/LeaveIcon.jsx";
 import ProfileImageIcon from "../assets/ProfileImageIcon.jsx";
 import UserIcon from '../assets/UserIcon.jsx';
 import axios from '../config/axios.js';
@@ -32,7 +33,10 @@ const Home = () => {
     const [deleteRoomLoader, setDeleteRoomLoader] = useState(false);
     const [createRoomLoader, setCreateRoomLoader] = useState(false);
     const [confirmDelete, setConfirmDelete] = useState(false);
-
+    const [leaveProjectId, setLeaveProjectId] = useState(null)
+    const [leaveProjectLoader, setLeaveProjectLoader] = useState(false);
+    const [confirmLeave, setConfirmLeave] = useState(false);
+    const [leaveProjectModal, setLeaveProjectModal] = useState(false)
 
     const handlelogout = () => {
         localStorage.setItem('token', '');
@@ -79,7 +83,6 @@ const Home = () => {
             }
         }).then((res) => {
             setProject(res.data.Projects);
-            console.log(res.data.Projects)
             setProjectLoading(false);
         }).catch((error) => {
             console.error("Error fetching projects:", error);
@@ -190,6 +193,26 @@ const Home = () => {
         });
     }
 
+    const handleLeaveProject = async () => {
+        setLeaveProjectLoader(true)
+        axios.delete(`/projects/leave-room/${leaveProjectId}`, {
+            headers: {
+                'Authorization': `${localStorage.getItem('token')}`,
+            }
+        }).then((res) => {
+            setLeaveProjectLoader(false)
+            setLeaveProjectModal(false)
+            setLeaveProjectId(null)
+            fetchProjects();
+        }).catch((err) => {
+            console.log(err)
+            toast.error('Error Deleting Project')
+            setLeaveProjectLoader(false)
+            setLeaveProjectModal(false)
+            setLeaveProjectId(null)
+        })
+    }
+
     return (
         <>
             <div>
@@ -267,69 +290,69 @@ const Home = () => {
                 )}
             </div>
 
-            {deleteModal && <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.3, ease: "easeOut" }}
-                    className={`absolute overflow-x-hidden bg-white flex flex-col items-center justify-around rounded-xl shadow-2xl p-6 w-[90%] max-w-[400px] h-auto ${deleteRoomLoader ? "pointer-events-none" : ""}`}
-                >
-                    {/* Modal Header */}
-                    {deleteRoomLoader && <SlideBar />}
-                    <div className="text-center">
-                        <h2 className="text-black text-2xl font-bold">Delete Project</h2>
-                        <p className="text-gray-800 mt-2 text-base leading-relaxed">
-                            Are you sure you want to delete this project? This action cannot be undone and will permanently remove all associated data.
-                        </p>
-                        <p className="text-gray-600 mt-1 text-sm font-light font-sans">
-                            Please confirm your decision by checking the box below and clicking <span className="font-mono font-medium text-red-400">Delete</span>.
-                        </p>
-                    </div>
+            {deleteModal &&
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                        className={`absolute overflow-x-hidden bg-white flex flex-col items-center justify-around rounded-xl shadow-2xl p-6 w-[90%] max-w-[400px] h-auto ${deleteRoomLoader ? "pointer-events-none" : ""}`}
+                    >
+                        {/* Modal Header */}
+                        {deleteRoomLoader && <SlideBar />}
+                        <div className="text-center">
+                            <h2 className="text-black text-2xl font-bold">Delete Project</h2>
+                            <p className="text-gray-800 mt-2 text-base leading-relaxed">
+                                Are you sure you want to delete this project? This action cannot be undone and will permanently remove all associated data.
+                            </p>
+                            <p className="text-gray-600 mt-1 text-sm font-light font-sans">
+                                Please confirm your decision by checking the box below and clicking <span className="font-mono font-medium text-red-400">Delete</span>.
+                            </p>
+                        </div>
 
-                    <div className="bg-gray-800 h-[2px] w-full rounded-full my-4"></div>
+                        <div className="bg-gray-800 h-[2px] w-full rounded-full my-4"></div>
 
-                    {/* Confirmation Checkbox */}
-                    <div className="flex items-center gap-2 mb-4">
-                        <input
-                            type="checkbox"
-                            id="confirmDeletion"
-                            className="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500"
-                            onChange={(e) => setConfirmDelete(e.target.checked)}
-                        />
-                        <label htmlFor="confirmDeletion" className="text-gray-700 text-sm">
-                            I understand that this action is irreversible.
-                        </label>
-                    </div>
+                        {/* Confirmation Checkbox */}
+                        <div className="flex items-center gap-2 mb-4">
+                            <input
+                                type="checkbox"
+                                id="confirmDeletion"
+                                className="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                                onChange={(e) => setConfirmDelete(e.target.checked)}
+                            />
+                            <label htmlFor="confirmDeletion" className="text-gray-700 text-sm">
+                                I understand that this action is irreversible.
+                            </label>
+                        </div>
 
-                    {/* Modal Buttons */}
-                    <div className="flex justify-center gap-6">
-                        <button
-                            className={`${deleteRoomLoader
-                                ? "pointer-events-none bg-red-400"
-                                : !confirmDelete
-                                    ? "bg-gray-500 cursor-not-allowed"
-                                    : "bg-red-600 hover:bg-red-500 transform hover:scale-105"
-                                } text-white font-semibold px-6 py-3 rounded-lg shadow-md transition-all duration-300 ease-in-out`}
-                            onClick={() => {
-                                if (!deleteRoomLoader && confirmDelete) deleteProject();
-                            }}
-                        >
-                            Delete
-                        </button>
+                        {/* Modal Buttons */}
+                        <div className="flex justify-center gap-6">
+                            <button
+                                className={`${deleteRoomLoader
+                                    ? "pointer-events-none bg-red-400"
+                                    : !confirmDelete
+                                        ? "bg-gray-500 cursor-not-allowed"
+                                        : "bg-red-600 hover:bg-red-500 transform hover:scale-105"
+                                    } text-white font-semibold px-6 py-3 rounded-lg shadow-md transition-all duration-300 ease-in-out`}
+                                onClick={() => {
+                                    if (!deleteRoomLoader && confirmDelete) deleteProject();
+                                }}
+                            >
+                                {deleteRoomLoader ? "Processing..." : "Delete"}
+                            </button>
 
-                        <button
-                            className={`${deleteRoomLoader ? "cursor-not-allowed disabled:opacity-70" : ""} bg-gray-100 text-gray-800 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-gray-200 transition-all duration-300 ease-in-out transform hover:scale-105`}
-                            onClick={() => {
-                                if (!deleteRoomLoader) setDeleteModal(false);
-                            }}
-                        >
-                            Cancel
-                        </button>
-                    </div>
-                </motion.div>
-
-            </div>}
+                            <button
+                                className={`${deleteRoomLoader ? "cursor-not-allowed disabled:opacity-70" : ""} bg-gray-100 text-gray-800 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-gray-200 transition-all duration-300 ease-in-out transform hover:scale-105`}
+                                onClick={() => {
+                                    if (!deleteRoomLoader) setDeleteModal(false);
+                                }}
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </motion.div>
+                </div>}
 
             {uploadModal &&
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -460,6 +483,74 @@ const Home = () => {
                     </motion.div>
                 </div>
             }
+
+
+            {leaveProjectModal && <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.8 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className={`absolute overflow-x-hidden bg-white flex flex-col items-center justify-around rounded-xl shadow-2xl p-6 w-[90%] max-w-[400px] h-auto ${leaveProjectLoader ? "pointer-events-none" : ""
+                        }`}
+                >
+                    {/* Modal Header */}
+                    {leaveProjectLoader && <SlideBar />}
+                    <div className="text-center">
+                        <h2 className="text-black text-2xl font-bold">Leave Project</h2>
+                        <p className="text-gray-600 mt-2 text-base leading-relaxed">
+                            Are you sure you want to leave this project? Once you leave, you will
+                            no longer have access to any associated data or updates.
+                        </p>
+                        <p className="text-gray-500 mt-1 text-sm">
+                            Please confirm your decision by checking the box below and clicking
+                            "Leave".
+                        </p>
+                    </div>
+
+                    <div className="bg-gray-500 h-[2px] w-full rounded-full my-4"></div>
+
+                    {/* Confirmation Checkbox */}
+                    <div className="flex items-center gap-2 mb-4">
+                        <input
+                            type="checkbox"
+                            id="confirmLeaving"
+                            className="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                            onChange={(e) => setConfirmLeave(e.target.checked)}
+                            disabled={leaveProjectLoader}
+                        />
+                        <label htmlFor="confirmLeaving" className="text-gray-700 text-sm">
+                            I understand that I will lose access to this project.
+                        </label>
+                    </div>
+
+                    {/* Modal Buttons */}
+                    <div className="flex justify-center gap-6">
+                        <button
+                            className={`${leaveProjectLoader
+                                ? "pointer-events-none bg-red-400"
+                                : !confirmLeave
+                                    ? "bg-gray-300 cursor-not-allowed"
+                                    : "bg-red-600 hover:bg-red-500 transform hover:scale-105"
+                                } text-white font-semibold px-6 py-3 rounded-lg shadow-md transition-all duration-300 ease-in-out`}
+                            onClick={handleLeaveProject}
+                        >
+                            {leaveProjectLoader ? "Processing..." : "Leave"}
+                        </button>
+                        <button
+                            className={`${leaveProjectLoader ? "cursor-not-allowed disabled:opacity-70" : ""
+                                } bg-gray-100 text-gray-800 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-gray-200 transition-all duration-300 ease-in-out transform hover:scale-105`}
+                            onClick={() => {
+                                if (!leaveProjectLoader) setLeaveProjectModal(false);
+                            }}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </motion.div>
+            </div>}
+
+
 
             <div className="min-h-screen bg-gradient-to-r from-indigo-600 to-blue-500 text-white">
                 {/* Navbar */}
@@ -621,7 +712,7 @@ const Home = () => {
                                                                             setDeleteProjectId(project._id);
                                                                             setDeleteModal(true);
                                                                         }}
-                                                                        className="bg-transparent border border-white w-[90px] h-[45px] rounded-lg hover:bg-blue-700 hover:shadow-lg hover:scale-110 transition duration-500 flex items-center justify-center"
+                                                                        className="bg-transparent border border-white w-[90px] h-[45px] rounded-lg hover:shadow-lg hover:scale-110 transition duration-500 flex items-center justify-center"
                                                                     >
                                                                         <DeleteIcon />
                                                                     </button>
@@ -685,6 +776,15 @@ const Home = () => {
                                                                         className="bg-yellow-400 text-black w-[90px] h-[45px] text-base md:text-xl font-semibold rounded-lg hover:bg-yellow-500 hover:shadow-lg hover:scale-110 transition duration-500"
                                                                     >
                                                                         Join
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setLeaveProjectId(project._id);
+                                                                            setLeaveProjectModal(true)
+                                                                        }}
+                                                                        className="bg-transparent border border-white w-[90px] h-[45px] rounded-lg hover:shadow-lg hover:scale-110 transition duration-500 flex items-center justify-center"
+                                                                    >
+                                                                        Leave <LeaveIcon color="#ffffff" />
                                                                     </button>
                                                                 </div>
                                                             </motion.div>
