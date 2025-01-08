@@ -31,6 +31,8 @@ const Home = () => {
     const [uploadProfileImageLoader, setUploadProfileImageLoader] = useState(false)
     const [deleteRoomLoader, setDeleteRoomLoader] = useState(false);
     const [createRoomLoader, setCreateRoomLoader] = useState(false);
+    const [confirmDelete, setConfirmDelete] = useState(false);
+
 
     const handlelogout = () => {
         localStorage.setItem('token', '');
@@ -77,6 +79,7 @@ const Home = () => {
             }
         }).then((res) => {
             setProject(res.data.Projects);
+            console.log(res.data.Projects)
             setProjectLoading(false);
         }).catch((error) => {
             console.error("Error fetching projects:", error);
@@ -201,11 +204,11 @@ const Home = () => {
                             animate={{ opacity: 1, scale: 1 }}
                             exit={{ opacity: 0, scale: 0.8 }}
                             transition={{ duration: 0.3, ease: 'easeOut' }}
-                            className="relative flex w-96 flex-col rounded-xl bg-white text-gray-700 shadow-md">
+                            className="relative flex max-w-96 w-[90%] flex-col rounded-xl bg-white text-gray-700 shadow-md">
                             {/* Modal Header */}
                             <div className="relative mx-4 -mt-6 mb-4 grid h-28 place-items-center overflow-hidden rounded-xl bg-gradient-to-r from-indigo-600 to-blue-500 text-white shadow-lg">
                                 {createRoomLoader && <SlideBar />}
-                                <h3 className="block text-3xl font-semibold">Start Creating Now.</h3>
+                                <h3 className="block sm:text-3xl text-2xl font-semibold">Start Creating Now.</h3>
                             </div>
 
                             {/* Modal Content */}
@@ -269,35 +272,54 @@ const Home = () => {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.8 }}
-                    transition={{ duration: 0.3, ease: 'easeOut' }}
-                    className={`absolute overflow-x-hidden bg-white flex flex-col items-center justify-around rounded-xl shadow-2xl p-6 w-[90%] max-w-[400px] h-[300px] ${deleteRoomLoader ? 'pointer-events-none' : ''
-                        }`}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className={`absolute overflow-x-hidden bg-white flex flex-col items-center justify-around rounded-xl shadow-2xl p-6 w-[90%] max-w-[400px] h-auto ${deleteRoomLoader ? "pointer-events-none" : ""}`}
                 >
                     {/* Modal Header */}
                     {deleteRoomLoader && <SlideBar />}
                     <div className="text-center">
                         <h2 className="text-black text-2xl font-bold">Delete Project</h2>
-                        <p className="text-gray-600 mt-2 text-base leading-relaxed">
-                            Are you sure you want to delete this project? This action cannot be undone.
+                        <p className="text-gray-800 mt-2 text-base leading-relaxed">
+                            Are you sure you want to delete this project? This action cannot be undone and will permanently remove all associated data.
+                        </p>
+                        <p className="text-gray-600 mt-1 text-sm font-light font-sans">
+                            Please confirm your decision by checking the box below and clicking <span className="font-mono font-medium text-red-400">Delete</span>.
                         </p>
                     </div>
 
-                    <div className="bg-gray-500 h-[2px] w-full rounded-full"></div>
+                    <div className="bg-gray-800 h-[2px] w-full rounded-full my-4"></div>
+
+                    {/* Confirmation Checkbox */}
+                    <div className="flex items-center gap-2 mb-4">
+                        <input
+                            type="checkbox"
+                            id="confirmDeletion"
+                            className="w-5 h-5 text-red-600 border-gray-300 rounded focus:ring-red-500"
+                            onChange={(e) => setConfirmDelete(e.target.checked)}
+                        />
+                        <label htmlFor="confirmDeletion" className="text-gray-700 text-sm">
+                            I understand that this action is irreversible.
+                        </label>
+                    </div>
 
                     {/* Modal Buttons */}
                     <div className="flex justify-center gap-6">
                         <button
-                            className={`${deleteRoomLoader ? 'pointer-events-none bg-red-400' : ''
-                                } bg-red-600 text-white font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-red-500 transition-all duration-300 ease-in-out transform hover:scale-105`}
+                            className={`${deleteRoomLoader
+                                ? "pointer-events-none bg-red-400"
+                                : !confirmDelete
+                                    ? "bg-gray-500 cursor-not-allowed"
+                                    : "bg-red-600 hover:bg-red-500 transform hover:scale-105"
+                                } text-white font-semibold px-6 py-3 rounded-lg shadow-md transition-all duration-300 ease-in-out`}
                             onClick={() => {
-                                if (!deleteRoomLoader) deleteProject();
+                                if (!deleteRoomLoader && confirmDelete) deleteProject();
                             }}
                         >
                             Delete
                         </button>
+
                         <button
-                            className={`${deleteRoomLoader ? 'cursor-not-allowed disabled:opacity-70' : ''
-                                } bg-gray-100 text-gray-800 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-gray-200 transition-all duration-300 ease-in-out transform hover:scale-105`}
+                            className={`${deleteRoomLoader ? "cursor-not-allowed disabled:opacity-70" : ""} bg-gray-100 text-gray-800 font-semibold px-6 py-3 rounded-lg shadow-md hover:bg-gray-200 transition-all duration-300 ease-in-out transform hover:scale-105`}
                             onClick={() => {
                                 if (!deleteRoomLoader) setDeleteModal(false);
                             }}
@@ -441,7 +463,7 @@ const Home = () => {
 
             <div className="min-h-screen bg-gradient-to-r from-indigo-600 to-blue-500 text-white">
                 {/* Navbar */}
-                <nav className="flex justify-between items-center py-4 px-6 md:px-12 bg-opacity-80">
+                <nav className="flex justify-between items-center py-4 px-2 sm:px-12 bg-opacity-80">
                     <motion.div
                         className="md:text-2xl text-xl font-bold  flex items-center justify-center gap-2"
                         initial={{ x: -100, opacity: 0 }}
@@ -504,9 +526,9 @@ const Home = () => {
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ duration: 0.8 }}
                     >
-                        <h1 className="text-4xl md:text-6xl font-bold mb-4 leading-tight">
-                            Welcome Back to <br />
-                            <span className="text-yellow-400">AI-ChatConnect</span>
+                        <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-snug text-center md:text-left">
+                            Welcome, <span className="capitalize text-yellow-400">{loggedInUser.name}</span>, to <br />
+                            <span className="">AI-ChatConnect</span>
                         </h1>
                         <p className="text-lg md:text-xl mb-6">
                             Create, explore, and manage rooms tailored for your projects. Work smarter with AI-driven features, chat history, and a powerful code editor – all in one place.                        </p>
@@ -547,12 +569,12 @@ const Home = () => {
                         </motion.h2>
                         {/* Scrollable container */}
                         {(
-                            <div className="flex flex-wrap items-center justify-between gap-6 md:p-6 p-3 rounded-xl">
+                            <div className="flex flex-wrap items-center justify-between gap-6 md:p-6 sm:p-3 p-1 rounded-xl">
                                 {project && (
                                     <>
                                         {/* Your Room Section */}
-                                        <div className="w-full md:w-[48%] flex flex-col gap-4 rounded-lg shadow-xl p-4">
-                                            <h2 className="text-2xl text-center font-bold text-white sticky top-0 bg-gradient-to-r from-indigo-700 to-blue-600 p-2 rounded-lg">
+                                        <div className="w-full md:w-[48%] flex flex-col gap-4 rounded-lg shadow-xl sm:p-4 p-1">
+                                            <h2 className="text-2xl text-center font-bold text-white sticky top-0 bg-gradient-to-r from-indigo-600 to-blue-500 p-2 rounded-lg">
                                                 Your Room
                                             </h2>
                                             <div className="flex flex-col gap-4 overflow-y-auto h-[30rem]">
@@ -567,14 +589,19 @@ const Home = () => {
                                                                 whileInView={{ y: 0, opacity: 1 }}
                                                                 transition={{ duration: 0.8, delay: 0.1 * index }}
                                                             >
-                                                                <h3 className="text-xl font-bold mb-2">{project.name}</h3>
-                                                                <p className="text-white">
-                                                                    <span className="font-mono">Click to Start Working with Your Team and AI to Create Something Amazing!</span>
+                                                                <h3 className="text-2xl font-bold border-4 border-blue-500 mb-2 capitalize bg-gradient-to-r from-indigo-700 to-blue-600 px-4 py-2 rounded-md shadow-lg">
+                                                                    {project.name}
+                                                                </h3>
+                                                                <p className="text-white text-base font-bold mb-2">
+                                                                    Create by: <span className="font-mono font-light capitalize">{project.adminName}</span>
                                                                 </p>
+                                                                <p className="text-white">
+                                                                    <span className="font-mono">Join now to collaborate with your team and AI!</span>
+                                                                </p>
+
                                                                 <p className="text-white flex items-center space-x-2 mt-3">
                                                                     <UserIcon />
                                                                     <span>{project.users.length}</span>
-                                                                    {/* <span>{project.users}</span> */}
                                                                 </p>
                                                                 <div className="flex items-end justify-start gap-3 pt-4">
                                                                     <button
@@ -585,7 +612,7 @@ const Home = () => {
                                                                                 },
                                                                             });
                                                                         }}
-                                                                        className="bg-yellow-400 text-black w-[90px] h-[45px] text-sm md:text-base font-semibold rounded-lg hover:bg-yellow-500 hover:shadow-lg hover:scale-110 transition duration-500"
+                                                                        className="bg-yellow-400 text-black w-[90px] h-[45px] text-base md:text-xl font-semibold rounded-lg hover:bg-yellow-500 hover:shadow-lg hover:scale-110 transition duration-500"
                                                                     >
                                                                         Join
                                                                     </button>
@@ -616,8 +643,8 @@ const Home = () => {
                                         </div>
 
                                         {/* Other Room Section */}
-                                        <div className="w-full md:w-[48%] flex flex-col gap-4 p-4 rounded-lg shadow-xl">
-                                            <h2 className="text-2xl text-center font-bold text-white sticky top-0 bg-gradient-to-r from-indigo-700 to-blue-600 p-2 rounded-lg">
+                                        <div className="w-full md:w-[48%] flex flex-col gap-4 rounded-lg shadow-xl sm:p-4 p-1">
+                                            <h2 className="text-2xl text-center font-bold text-white sticky top-0 bg-gradient-to-r from-indigo-600 to-blue-500 p-2 rounded-lg">
                                                 Other Room
                                             </h2>
                                             <div className="flex flex-col gap-4 overflow-y-auto h-[30rem]">
@@ -632,14 +659,19 @@ const Home = () => {
                                                                 whileInView={{ y: 0, opacity: 1 }}
                                                                 transition={{ duration: 0.8, delay: 0.1 * index }}
                                                             >
-                                                                <h3 className="text-xl font-bold mb-2">{project.name}</h3>
-                                                                <p className="text-white">
-                                                                    <span className="font-mono">Click to Start Working with Your Team and AI to Create Something Amazing!</span>
+                                                                <h3 className="text-2xl font-bold border-4 border-blue-500 mb-2 capitalize bg-gradient-to-r from-indigo-700 to-blue-600 px-4 py-2 rounded-md shadow-lg">
+                                                                    {project.name}
+                                                                </h3>
+                                                                <p className="text-white text-base font-bold mb-2">
+                                                                    Create by: <span className="font-mono font-light capitalize">{project.adminName}</span>
                                                                 </p>
+                                                                <p className="text-white">
+                                                                    <span className="font-mono">Join now to collaborate with your team and AI!</span>
+                                                                </p>
+
                                                                 <p className="text-white flex items-center space-x-2 mt-3">
                                                                     <UserIcon />
                                                                     <span>{project.users.length}</span>
-
                                                                 </p>
                                                                 <div className="flex items-end justify-start gap-3 pt-4">
                                                                     <button
@@ -650,7 +682,7 @@ const Home = () => {
                                                                                 },
                                                                             });
                                                                         }}
-                                                                        className="bg-yellow-400 text-black w-[90px] h-[45px] text-sm md:text-base font-semibold rounded-lg hover:bg-yellow-500 hover:shadow-lg hover:scale-110 transition duration-500"
+                                                                        className="bg-yellow-400 text-black w-[90px] h-[45px] text-base md:text-xl font-semibold rounded-lg hover:bg-yellow-500 hover:shadow-lg hover:scale-110 transition duration-500"
                                                                     >
                                                                         Join
                                                                     </button>

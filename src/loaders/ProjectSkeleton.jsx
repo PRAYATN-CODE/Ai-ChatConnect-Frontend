@@ -4,7 +4,7 @@ const ProjectSkeleton = () => {
     return (
         <div className="w-full flex flex-col gap-4 bg-gradient-to-r from-indigo-700 to-blue-600 p-4 rounded-lg shadow-md">
             {/* Scrollable content */}
-            <div className="flex flex-col gap-4 overflow-y-auto max-h-[25rem] lg:min-w-[22rem] min-w-full">
+            <div className="flex flex-col gap-4 overflow-y-auto max-h-[25rem] lg:min-w-[25rem] min-w-full">
                 {/* Repeating skeleton blocks */}
                 {[...Array(2)].map((_, index) => (
                     <div
