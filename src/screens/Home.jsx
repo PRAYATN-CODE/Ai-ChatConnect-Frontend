@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { Loader2 } from 'lucide-react';
 import React, { useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -9,12 +10,12 @@ import ProfileImageIcon from "../assets/ProfileImageIcon.jsx";
 import UserIcon from '../assets/UserIcon.jsx';
 import axios from '../config/axios.js';
 import UserContext from '../context/userContext.jsx';
-import ProjectSkeleton from '../loaders/ProjectSkeleton.jsx';
 import SlideBar from "../loaders/SlideBar.jsx";
 
 const Home = () => {
 
     const navigate = useNavigate();
+    const token = localStorage.getItem('token')
     const { user, setUser } = useContext(UserContext);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [projectName, setProjectName] = useState(null);
@@ -75,21 +76,29 @@ const Home = () => {
         })
     }
 
-    const fetchProjects = () => {
-        setProjectLoading(true);
-        axios.get('/projects/all', {
-            headers: {
-                'Authorization': `${localStorage.getItem('token')}`,
-            }
-        }).then((res) => {
-            setProject(res.data.Projects);
-            setProjectLoading(false);
-        }).catch((error) => {
+    const fetchProjects = async () => {
+
+        if (!token) return
+
+        try {
+            setProjectLoading(true);
+            const response = await axios.get('/projects/all', {
+                headers: {
+                    'Authorization': token,
+                }
+            });
+            setProject(response.data.Projects);
+        } catch (error) {
             console.error("Error fetching projects:", error);
+            toast.error('Error Loading Projects');
+        } finally {
             setProjectLoading(false);
-            toast.error('Error Loading Projects')
-        });
-    }
+        }
+    };
+
+    useEffect(() => {
+        fetchProjects()
+    }, [])
 
     useEffect(() => {
         if (!user && !localStorage.getItem('token')) {
@@ -660,7 +669,7 @@ const Home = () => {
                         </motion.h2>
                         {/* Scrollable container */}
                         {(
-                            <div className="flex flex-wrap items-center justify-between gap-6 md:p-6 sm:p-3 p-1 rounded-xl">
+                            <div className="flex w-full flex-wrap items-center justify-between gap-6 md:p-6 sm:p-3 p-1 rounded-xl">
                                 {project && (
                                     <>
                                         {/* Your Room Section */}
@@ -721,7 +730,9 @@ const Home = () => {
                                                         ))
                                                 ) : (
                                                     projectLoading ? (
-                                                        <ProjectSkeleton />
+                                                        <div className="w-full h-full flex items-center justify-center">
+                                                            <Loader2 className="animate-spin h-12 w-12 text-blue-500" strokeWidth={3} />
+                                                        </div>
                                                     ) : (
                                                         <div className="p-6 text-yellow-700 text-center text-wrap w-full">
                                                             <p className="text-lg font-semibold">
@@ -791,7 +802,9 @@ const Home = () => {
                                                         ))
                                                 ) : (
                                                     projectLoading ? (
-                                                        <ProjectSkeleton />
+                                                        <div className="w-full h-full flex items-center justify-center">
+                                                            <Loader2 className="animate-spin h-12 w-12 text-blue-500" strokeWidth={3} />
+                                                        </div>
                                                     ) : (
                                                         <div className="p-6 text-yellow-700 text-center  text-wrap w-full">
                                                             <p className="text-lg font-semibold">
@@ -806,19 +819,6 @@ const Home = () => {
                                 )}
                             </div>
                         )}
-
-
-                        {!project || (Array.isArray(project) && project.length === 0) || (typeof project === 'object' && Object.keys(project).length === 0) ? (
-                            <motion.button
-                                className="bg-gradient-to-r from-indigo-600 to-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-800 mt-6 shadow-xl"
-                                initial={{ y: 50, opacity: 0 }}
-                                animate={{ y: 0, opacity: 1 }}
-                                transition={{ duration: 0.8, delay: 0.6 }}
-                                onClick={fetchProjects}
-                            >
-                                Load Room
-                            </motion.button>
-                        ) : null}
 
                     </div>
                 </section>
